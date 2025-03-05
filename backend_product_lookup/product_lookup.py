@@ -7,6 +7,13 @@ import requests
 # this is crucial so that frontend can understand the responses of queries
 # --------------
 
+# REFERNCE LINKS
+# --------------
+# Open Food Facts Documentation - https://world.openfoodfacts.org/files/api-documentation.html#jump-SearchRequests-Searchingforproducts
+# Requests - https://www.w3schools.com/python/ref_requests_get.asp
+# JSONIFY - https://www.geeksforgeeks.org/use-jsonify-instead-of-json-dumps-in-flask/#
+
+
 app = Flask(__name__)
 # unsure of what endpoint i should be referencing to search things via Flask
 OPENFOODFACTS_API_URL = "https://world.openfoodfacts.org/cgi/search.pl"
