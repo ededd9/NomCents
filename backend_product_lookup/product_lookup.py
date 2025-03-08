@@ -15,10 +15,37 @@ import requests, math
 # JSONIFY - https://www.geeksforgeeks.org/use-jsonify-instead-of-json-dumps-in-flask/#
 
 
+# google search engine ID - a1fd8a68793a64ed1
+# google api key - AIzaSyDqPggIMYWxVREK0l1a_zxnORiDj-Bd7AM
+
 app = Flask(__name__)
-# unsure of what endpoint i should be referencing to search things via Flask
 USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search"
 USDA_API_KEY = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN"
+# GOOGLE_API_KEY = "AIzaSyDqPggIMYWxVREK0l1a_zxnORiDj-Bd7AM"
+# SEARCH_ENGINE_ID = "a1fd8a68793a64ed1"
+
+"""def get_product_image(product, brand):
+    query = f"{product} {brand} food"
+    url = f"https://www.googleapis.com/customsearch/v1"
+    
+    # response should contain image from custom search query
+    response = requests.get(url, params = {
+        "q": query,
+        "cx": SEARCH_ENGINE_ID,
+        "key": GOOGLE_API_KEY,
+        "searchType": "image",
+        "num": 1
+    })
+    
+    if response.status_code == 200:
+        data = response.json()
+        print("Google API response:", data)  # Debug print the entire response
+
+        
+        # if there are multiple images that could be retrieved
+        if "items" in data and len(data["items"]) > 0:
+            return data["items"][0]["link"] # 0 = first image url
+    return None # no image found"""
 
 @app.route('/api/search', methods=['GET'])
 def search_product():
@@ -73,15 +100,24 @@ def search_product():
     # format product data
     results = []
     for food in foods:
+        # need these parameters for image querying
+        name = food.get("description", "Unknown")
+        brand = food.get("brandOwner", "Unknown")
+        
+        # get image url using google search api
+        # image_url = get_product_image(name, brand)
+        
         food_info = {
-            "name": food.get("description", "Unknown"),
-            "brand": food.get("brandOwner", "Unknown"),
+            "name": name,
+            "brand": brand,
             "ingredients": food.get("ingredients", "Ingredients not available"),
             "nutrition": {
                 "calories": None,
                 "protein": None,
                 "fat": None,
-                "carbohydrates": None
+                "carbohydrates": None,
+                "sugars": None,
+                "vitamins": {}
             }
         }
         
@@ -100,6 +136,12 @@ def search_product():
                     food_info["nutrition"]["fat"] = nutrient_value
                 elif "carbohydrate" in nutrient_name:
                     food_info["nutrition"]["carbohydrates"] = nutrient_value
+                elif "sugars" in nutrient_name:
+                    food_info["nutrition"]["sugars"] = nutrient_value
+                elif "vitamin" in nutrient_name:
+                    vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
+                    food_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
+    
         
         # add each product to results list
         results.append(food_info)
