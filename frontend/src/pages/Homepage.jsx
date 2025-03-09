@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./Homepage.css";
 
 function Homepage() {
   const [product, setProduct] = useState("");
@@ -6,20 +7,30 @@ function Homepage() {
   const [groceryList, setGroceryList] = useState([]);
   const searchProducts = async () => {
     try {
+      const apiKey = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN";
       const response = await fetch(
-        `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${product}&page_size=10&json=true`
+        `https://api.nal.usda.gov/fdc/v1/foods/search?query=${product}&pageSize=10&api_key=${apiKey}`
       );
       const data = await response.json();
-      setResults(data.products);
+      setResults(data.foods);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
   };
   //adding current product state to grocery list
-  const addToGroceryList = (product) => {
-    setGroceryList([...groceryList, product]);
-  };
+  // const addToGroceryList = (product) => {
+  //   setGroceryList([...groceryList, product]);
+  // };
 
+  const toggleGroceryList = (product) => {
+    if (groceryList.some((item) => item.fdcId === product.fdcId)) {
+      setGroceryList(
+        groceryList.filter((item) => item.fdcId !== product.fdcId)
+      );
+    } else {
+      setGroceryList([...groceryList, product]);
+    }
+  };
   return (
     <div className="Homepage">
       <h1>NomCents</h1>
@@ -37,20 +48,36 @@ function Homepage() {
       <div>
         <h2>Search Results</h2>
         <ul>
-          {results.map((product) => (
-            <li key={product.id}>
-              <h3>{product.product_name}</h3>
-              <p>Brand: {product.brands}</p>
-              <p>
-                <img src={product.image_url}></img>
-              </p>
-              <button onClick={() => addToGroceryList(product)}>
-                Add to Grocery List
-              </button>
-            </li>
-          ))}
+          <div className="search-results">
+            {results.map((product) => (
+              <div key={product.id}>
+                <div className="product-card">
+                  <h3>{product.description}</h3>
+                  <p>Brand: {product.brandName}</p>
+                  <p>Ingredients: {product.ingredients}</p>
+                  <p>
+                    <ul>
+                      {product.foodNutrients
+                        ? product.foodNutrients.map((nutrient) => (
+                            <li>
+                              {nutrient.nutrientName}: {nutrient.value}
+                            </li>
+                          ))
+                        : "None"}
+                    </ul>
+                  </p>
+                  <button onClick={() => toggleGroceryList(product)}>
+                    {groceryList.some((item) => item.fdcId == product.fdcId)
+                      ? "Remove from Grocery List"
+                      : "Add to Grocery List"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </ul>
       </div>
+      <button>Load More</button>
 
       {/* Grocery List */}
       <div className="grocery-list-section">
@@ -58,9 +85,7 @@ function Homepage() {
         <ul>
           {groceryList.map((item, index) => (
             <li key={index}>
-              <h3>{item.product_name}</h3>
-              <p>Brand: {item.brands}</p>
-              <p>Image: </p>
+              <h3>{item.brandName}</h3>
             </li>
           ))}
         </ul>
