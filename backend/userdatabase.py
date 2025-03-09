@@ -30,40 +30,39 @@ class AtlasClient ():
    
 class datauser():
     def __init__(self,atlas_uri, dbname, collection_name):
-        self.atlas_client = AtlasClient (ATLAS_URI, DB_NAME)
+        self.atlas_client = AtlasClient (atlas_uri, dbname)
         self.atlas_client.ping()
         print ('Connected to Atlas instance! We are good to go!')
         self.collection_name=collection_name
     def userLookup (self,userString):
        userdet=json.loads(userString)
-       collection = self.database[self.collection_name]
+       collection = self.atlas_client.database[self.collection_name]
        user = collection.find_one({"email":userdet['email']})
        return user
     def isUser(self,userstring):
-        user = self.userLookup (userString='{"email":"'+ input("Enter email: ")+'\"}')
+        user = self.userLookup (userstring)
         if(not (user is None)):
             return True
         else:
             return False
-    def makeUser(self,email,name):
-        usstring=('{"email":"'+ email+'\"}')
-        if(not data.isUser(usstring)):
-            self.atlas_client.insWrapper({"name":name, "email":email})
+    def makeUser(self,userstring):
+        userdet=json.loads(userstring)
+        if(not data.isUser(userstring)):
+            self.atlas_client.insWrapper(userdet,self.collection_name)
         else:
             print("failure user exists")
 
 
-
-
 data = datauser (ATLAS_URI, DB_NAME,COLLECTION_NAME)
-print ('Connected to Atlas instance! We are good to go!')
 email=input("Enter email: ")
-usstring=('{"email":"'+ email+'\"}')
+usstring=('{"email":"'+ email+'"}')
 if(data.isUser(usstring)):
     user=data.userLookup(usstring)
-    print("username is "+ user['name'])
+    print("user name is "+ user['name'])
 else:
     print("user not found, create user now")
     name = input("Enter name: ")
-    data.makeUser(email,name)
+    usstring='{"email":"'+ email+'", "name":"'+name+'"}'
+
+    data.makeUser(usstring)
 print(data.isUser(usstring))
