@@ -1,0 +1,47 @@
+.search-results {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+.product-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  background: #f9f9f9;
+  height: 300px;
+  overflow-y: auto;
+}
+
+.product-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.2em;
+}
+.product-card ul {
+  padding-left: 20px; /* Add padding to the left of the list */
+  margin: 0; /* Remove default margin */
+  list-style-position: inside; /* Ensure bullets are inside the padding */
+}
+
+.product-card li {
+  margin: 4px 0; /* Add spacing between list items */
+}
+.product-card p {
+  margin: 4px 0;
+}
+
+.product-card button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.product-card button:hover {
+  background: #0056b3;
+}
