@@ -120,6 +120,20 @@ def user():
         else:
             abort(404)
 
+@app.route('/api/auth/google', methods=['POST'])
+def verify_google_token():
+    token = request.json.get('token')
+    response = requests.get(f'https://oauth2.googleapis.com/tokeninfo?id_token={token}')
+    if response.status_code == 200:
+        user_info = response.json()
+        email = user_info['email']
+        user = data.userLookup(json.dumps({"email": email}))
+        if not user:
+            return jsonify({"message": "Not a User"}), 404
+        return jsonify(user_info), 200
+    else:
+        return jsonify({"message": "Invalid token"}), 400
+
 if __name__ == '__main__':
     app.run(debug=True)
 
