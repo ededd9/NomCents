@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from 'react-router-dom';
+import "./PopUp.css";
 
 // Pass message, function to close the popup, and whether or not to show the login page reroute button as props
 const Popup = ({ message, closePopup, showLoginButton }) => {
@@ -14,16 +15,16 @@ const Popup = ({ message, closePopup, showLoginButton }) => {
 
   return (
     <>
-      <div className="popup-overlay">
-        <div className="popup-box">
+      <div className={`${showLoginButton ? 'login-overlay' : 'success-overlay'}`}>
+        <div className={`${showLoginButton ? 'login-popup' : 'success-popup'}`}>
           <p>{message}</p>
           {showLoginButton ? (
             <>
-              <button onClick={handleLogin}>Go to Login Page</button>
               <button onClick={closePopup}>Cancel</button>
+              <button onClick={handleLogin}>Go to Login Page</button>
             </>
           ) : (
-            <button onClick={closePopup}>OK</button>
+            null
           )}
         </div>
       </div>

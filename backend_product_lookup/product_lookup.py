@@ -111,6 +111,7 @@ def search_product():
         # image_url = get_product_image(name, brand)
         
         food_info = {
+            "fdcId": food.get("fdcId"),
             "name": name,
             "brand": brand,
             "ingredients": food.get("ingredients", "Ingredients not available"),

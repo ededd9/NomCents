@@ -40,3 +40,31 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Navigation Bar */
+.NavBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #333;
+  color: white;
+  padding: 10px 20px;
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.NavBar a {
+  color: white;
+  text-decoration: none;
+  padding: 0 15px;
+}
+
+.NavBar a:hover {
+  text-decoration: underline;
+}
+
+/* Optional: Show Navigation Bar on Mouse Hover */
+body:hover .NavBar {
+  top: 0;
+}
