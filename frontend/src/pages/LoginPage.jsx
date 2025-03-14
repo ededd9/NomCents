@@ -18,7 +18,7 @@ const LoginPage = () => {
     onSuccess: async (response) => {
       const token = response.credential; // Get the ID token
       try {
-          const backendResponse = await fetch("http://localhost:5173/auth/google", {
+          const backendResponse = await fetch("http://localhost:5000/auth/google", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ token })  // Send token to backend
@@ -47,7 +47,7 @@ const LoginPage = () => {
     console.log(token)
     //Still need to send to backend on success
     try {
-          const backendResponse = await fetch("http://localhost:5173/auth/google", {
+          const backendResponse = await fetch("http://localhost:5000/auth/google", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: token // Send the userdata to backend
