@@ -7,6 +7,9 @@ function ViewProducts() {
   const [product, setProduct] = useState("");
   const [results, setResults] = useState([]);
   const [groceryList, setGroceryList] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Stuff for conditional (logged in/logged out) add to cart pop up display
   const { isLoggedIn } = useContext(LoginContext);
@@ -14,42 +17,63 @@ function ViewProducts() {
   const [popupMessage, setPopupMessage] = useState("");
   const [showLoginButton, setShowLoginButton] = useState(false);
 
-  const searchProducts = async () => {
+  // Function to search for products
+  const searchProducts = async (page = 1) => {
+  
     try {
-      // Need to replace this query with query to backend api endpoint
-      const apiKey = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN";
+
+      setIsLoading(true);
+  
       const response = await fetch(
-        `https://api.nal.usda.gov/fdc/v1/foods/search?query=${product}&pageSize=10&api_key=${apiKey}`
+        `http://127.0.0.1:5000/api/search?product=${product}&page=${page}&pageSize=10`
       );
+  
       const data = await response.json();
-      setResults(data.foods);
+  
+      if (page === 1) {
+        setResults(data.results);
+      } else {
+        setResults((prevResults) => [...prevResults, ...data.results]);
+      }
+  
+      setTotalPages(data.paging_info.total_pages);
+      setIsLoading(false);
+  
     } catch (error) {
+  
       console.error("Error fetching products:", error);
+      setIsLoading(false);
     }
+  };
+
+  const loadMoreProducts = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    searchProducts(nextPage);
   };
 
 
   // Functions for adding/removing/incrementing/decrementing item from grocery list
   const addToGroceryList = (product) => {
-
+  
     // If user is logged in, add product to grocery list and show success pop up
     if (isLoggedIn) {
-
+  
       const existingProduct = groceryList.find(
         (item) => item.fdcId === product.fdcId
       );
-
+  
       if (existingProduct) {
         // If product already exists in grocery list, increment quantity by 1
         existingProduct.quantity += 1;
         setGroceryList([...groceryList]);
       } else {
-
+  
         // If product doesn't exist in grocery list, add it with quantity of 1
         product.quantity = 1;
         setGroceryList([...groceryList, product]);
       }
-
+  
       setShowPopup(true);
       setPopupMessage("Product added to grocery list!");
       setShowLoginButton(false);
@@ -73,11 +97,11 @@ function ViewProducts() {
   
     // Remove product from grocery list and show success pop up
     setGroceryList(groceryList.filter((item) => item.fdcId !== product.fdcId));
-    
+  
     setShowPopup(true);
     setPopupMessage("Product removed from grocery list!");
     setShowLoginButton(false);
-    
+
     // Close popup after 5 seconds if user doesn't click OK
     setTimeout(() => {
       setShowPopup(false);
@@ -86,7 +110,7 @@ function ViewProducts() {
 
 
   const incrementQuantity = (product) => {
-
+  
     // Increment quantity of product in grocery list
     setGroceryList(
       groceryList.map((item) =>
@@ -128,7 +152,7 @@ function ViewProducts() {
           value={product}
           onChange={(e) => setProduct(e.target.value)}
         />
-        <button onClick={searchProducts}>Search</button>
+        <button onClick={() => searchProducts(1)}>Search</button>
       </div>
 
       <div>
@@ -188,8 +212,9 @@ function ViewProducts() {
           showLoginButton={showLoginButton}
         />
       )}
-      {/*Have this button actually do something*/}
-      <button>Load More</button>
+      <button onClick={loadMoreProducts} disabled={isLoading || currentPage >= totalPages}>
+        {isLoading ? "Loading..." : "Load More"}
+      </button>
     </div>
   );
 }

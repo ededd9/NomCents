@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import requests, math
 
 # NOTES
@@ -19,6 +20,8 @@ import requests, math
 # google api key - AIzaSyDqPggIMYWxVREK0l1a_zxnORiDj-Bd7AM
 
 app = Flask(__name__)
+CORS(app) # allows cross-origin requests, which is needed for the frontend to access the backend
+
 USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search"
 USDA_API_KEY = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN"
 # GOOGLE_API_KEY = "AIzaSyDqPggIMYWxVREK0l1a_zxnORiDj-Bd7AM"
