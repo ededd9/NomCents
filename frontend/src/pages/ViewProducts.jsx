@@ -19,9 +19,7 @@ function ViewProducts() {
 
   // Function to search for products
   const searchProducts = async (page = 1) => {
-    
     try {
-      
       setIsLoading(true);
 
       const response = await fetch(
@@ -42,9 +40,7 @@ function ViewProducts() {
 
       setTotalPages(data.paging_info.total_pages);
       setIsLoading(false);
-    
     } catch (error) {
-
       console.error("Error fetching products:", error);
       setIsLoading(false);
     }
@@ -56,28 +52,24 @@ function ViewProducts() {
     searchProducts(nextPage);
   };
 
-
   // Functions for adding/removing/incrementing/decrementing item from grocery list
   const addToGroceryList = (product) => {
-  
     // If user is logged in, add product to grocery list and show success pop up
     if (isLoggedIn) {
-  
       const existingProduct = groceryList.find(
         (item) => item.fdcId === product.fdcId
       );
-  
+
       if (existingProduct) {
         // If product already exists in grocery list, increment quantity by 1
         existingProduct.quantity += 1;
         setGroceryList([...groceryList]);
       } else {
-  
         // If product doesn't exist in grocery list, add it with quantity of 1
         product.quantity = 1;
         setGroceryList([...groceryList, product]);
       }
-  
+
       setShowPopup(true);
       setPopupMessage("Product added to grocery list!");
       setShowLoginButton(false);
@@ -86,9 +78,7 @@ function ViewProducts() {
       setTimeout(() => {
         setShowPopup(false);
       }, 5000);
-  
     } else {
-  
       // Else, show popup prompting user to login with button to login page
       setShowPopup(true);
       setPopupMessage("Please log in to add products to your grocery list.");
@@ -96,12 +86,10 @@ function ViewProducts() {
     }
   };
 
-
   const removeFromGroceryList = (product) => {
-  
     // Remove product from grocery list and show success pop up
     setGroceryList(groceryList.filter((item) => item.fdcId !== product.fdcId));
-  
+
     setShowPopup(true);
     setPopupMessage("Product removed from grocery list!");
     setShowLoginButton(false);
@@ -112,9 +100,7 @@ function ViewProducts() {
     }, 5000);
   };
 
-  
   const incrementQuantity = (product) => {
-  
     // Increment quantity of product in grocery list
     setGroceryList(
       groceryList.map((item) =>
@@ -125,9 +111,7 @@ function ViewProducts() {
     );
   };
 
-  
   const decrementQuantity = (product) => {
-  
     // Decrement quantity of product in grocery list
     setGroceryList(
       groceryList.map((item) =>
@@ -138,12 +122,10 @@ function ViewProducts() {
     );
   };
 
-  
   // Popup close function to pass to Popup component
   const handleClosePopup = () => {
     setShowPopup(false);
   };
-
 
   return (
     <div className="ViewProducts">
@@ -171,16 +153,39 @@ function ViewProducts() {
                 <div key={product.fdcId}>
                   <div className="product-card">
                     <h3>{product.name}</h3>
-                    <p>Brand: {product.brandName}</p>
+                    <p>Brand: {product.brand}</p>
                     <p>Ingredients: {product.ingredients}</p>
                     <p>
                       <ul>
-                        {product.foodNutrients
-                          ? product.foodNutrients.map((nutrient) => (
-                              <li key={nutrient.nutrientId}>
-                                {nutrient.nutrientName}: {nutrient.value}
-                              </li>
-                            ))
+                        {product.nutrition
+                          ? Object.entries(product.nutrition).map(
+                              ([key, value]) => {
+                                if (
+                                  typeof value === "object" &&
+                                  value !== null
+                                ) {
+                                  return (
+                                    <li key={key}>
+                                      {key}:
+                                      <ul>
+                                        {Object.entries(value).map(
+                                          ([subKey, subValue]) => (
+                                            <li key={subKey}>
+                                              {subKey}: {subValue}
+                                            </li>
+                                          )
+                                        )}
+                                      </ul>
+                                    </li>
+                                  );
+                                }
+                                return (
+                                  <li key={key}>
+                                    {key}: {value}
+                                  </li>
+                                );
+                              }
+                            )
                           : "None"}
                       </ul>
                     </p>
@@ -216,7 +221,10 @@ function ViewProducts() {
           showLoginButton={showLoginButton}
         />
       )}
-      <button onClick={loadMoreProducts} disabled={isLoading || currentPage >= totalPages}>
+      <button
+        onClick={loadMoreProducts}
+        disabled={isLoading || currentPage >= totalPages}
+      >
         {isLoading ? "Loading..." : "Load More"}
       </button>
     </div>
