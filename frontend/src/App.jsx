@@ -48,7 +48,10 @@ function App() {
           <LoginContext.Consumer>
             {({ isLoggedIn, setIsLoggedIn }) => (
               isLoggedIn ? (
-                <button onClick={() => setIsLoggedIn(false)}>Logout</button>
+                <button onClick={() => {
+                  setIsLoggedIn(false);
+                  window.location.href = '/'; // Redirect to homepage after logout
+                }}>Logout</button>
               ) : (
                 <a href='/login'>Login</a>
               )
