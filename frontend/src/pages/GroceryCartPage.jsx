@@ -1,13 +1,19 @@
 import { useState } from "react";
 import GroceryCart from "./GroceryCart";
 
+// Import images from the assets folder
+import breadImage from "../assets/bread.jpg";
+import milkImage from "../assets/milk.jpg";
+import cokeZeroImage from "../assets/coke_zero.jpg";
+import ketchupImage from "../assets/ketchup.jpg";
+
 const GroceryCartPage = () => {
-  // Initial grocery list
+  // Initial grocery list with imported images
   const [cartItems, setCartItems] = useState([
-    { id: 1, name: "Jason’s Sourdough White Ciabattin Bread", image: "/bread.jpg", quantity: 1 },
-    { id: 2, name: "Jaouda Milk", image: "/assets/milk.jpg", quantity: 1 },
-    { id: 3, name: "Coca-Cola Zero", image: "/assets/coke_zero.jpg", quantity: 1 },
-    { id: 4, name: "Heinz Tomato Ketchup", image: "/assets/ketchup.jpg", quantity: 1 },
+    { id: 1, name: "Jason's Sourdough White Ciabattin Bread", image: breadImage, quantity: 1 },
+    { id: 2, name: "Jaouda Milk", image: milkImage, quantity: 1 },
+    { id: 3, name: "Coca-Cola Zero", image: cokeZeroImage, quantity: 1 },
+    { id: 4, name: "Heinz Tomato Ketchup", image: ketchupImage, quantity: 1 },
   ]);
 
   // Function to increment quantity
