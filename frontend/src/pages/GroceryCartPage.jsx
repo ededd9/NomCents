@@ -2,10 +2,6 @@ import { useState } from "react";
 import GroceryCart from "./GroceryCart";
 
 // Import images from the assets folder
-import breadImage from "../assets/bread.jpg";
-import milkImage from "../assets/milk.jpg";
-import cokeZeroImage from "../assets/coke_zero.jpg";
-import ketchupImage from "../assets/ketchup.jpg";
 
 const GroceryCartPage = () => {
   // Initial grocery list with imported images
