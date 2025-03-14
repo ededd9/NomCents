@@ -19,28 +19,32 @@ function ViewProducts() {
 
   // Function to search for products
   const searchProducts = async (page = 1) => {
-  
+    
     try {
-
+      
       setIsLoading(true);
-  
+
       const response = await fetch(
         `http://127.0.0.1:5000/api/search?product=${product}&page=${page}&pageSize=10`
       );
-  
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-  
+
       if (page === 1) {
         setResults(data.results);
       } else {
         setResults((prevResults) => [...prevResults, ...data.results]);
       }
-  
+
       setTotalPages(data.paging_info.total_pages);
       setIsLoading(false);
-  
+    
     } catch (error) {
-  
+
       console.error("Error fetching products:", error);
       setIsLoading(false);
     }
@@ -108,7 +112,7 @@ function ViewProducts() {
     }, 5000);
   };
 
-
+  
   const incrementQuantity = (product) => {
   
     // Increment quantity of product in grocery list
@@ -121,7 +125,7 @@ function ViewProducts() {
     );
   };
 
-
+  
   const decrementQuantity = (product) => {
   
     // Decrement quantity of product in grocery list
@@ -134,7 +138,7 @@ function ViewProducts() {
     );
   };
 
-
+  
   // Popup close function to pass to Popup component
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -164,9 +168,9 @@ function ViewProducts() {
                 (item) => item.fdcId === product.fdcId
               );
               return (
-                <div key={product.id}>
+                <div key={product.fdcId}>
                   <div className="product-card">
-                    <h3>{product.description}</h3>
+                    <h3>{product.name}</h3>
                     <p>Brand: {product.brandName}</p>
                     <p>Ingredients: {product.ingredients}</p>
                     <p>
@@ -182,12 +186,12 @@ function ViewProducts() {
                     </p>
                     {inGroceryList ? (
                       <>
-                        <button onClick={() => incrementQuantity(product)}>
-                          +
-                        </button>
-                        <span>{inGroceryList.quantity}</span>
                         <button onClick={() => decrementQuantity(product)}>
                           -
+                        </button>
+                        <span>{inGroceryList.quantity}</span>
+                        <button onClick={() => incrementQuantity(product)}>
+                          +
                         </button>
                         <button onClick={() => removeFromGroceryList(product)}>
                           Remove from Grocery List
@@ -208,7 +212,7 @@ function ViewProducts() {
       {showPopup && (
         <Popup
           message={popupMessage}
-          onClose={handleClosePopup}
+          closePopup={handleClosePopup}
           showLoginButton={showLoginButton}
         />
       )}
