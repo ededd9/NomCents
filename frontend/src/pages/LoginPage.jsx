@@ -2,12 +2,12 @@ import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginContext } from '../contexts/LoginContext';
 import { GoogleLogin, useGoogleLogin} from '@react-oauth/google';
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 
 import Popup from '../components/PopUp';
 
 const LoginPage = () => {
-  const { setIsLoggedIn } = useContext(LoginContext);
+  const { setIsLoggedIn, setUser } = useContext(LoginContext);
   const navigate = useNavigate();
 
   const [showPopup, setShowPopup] = useState(false);
@@ -26,7 +26,15 @@ const LoginPage = () => {
 
           const data = await backendResponse.json();
           console.log("Backend response:", data);
-          handleLogin()
+          
+          //If the backend response is successful, set the user and login state in context and show the popup message
+          if (backendResponse.ok) {
+            setUser(data); // Store user data in context
+            setIsLoggedIn(true); // Set login state to true  
+            handleLogin()
+          } else {
+            console.error("Login failed:", data.message);
+          }
       } catch (error) {
           console.error("Error logging in:", error);
       }
@@ -45,7 +53,7 @@ const LoginPage = () => {
       _email:email,
     };
     console.log(token)
-    //Still need to send to backend on success
+    //Send to backend on success
     try {
           const backendResponse = await fetch("http://localhost:5000/auth/google", {
               method: "POST",
@@ -55,7 +63,15 @@ const LoginPage = () => {
 
           const data = await backendResponse.json();
           console.log("Backend response:", data);
-          handleLogin()
+
+          //If the backend response is successful, set the user and login state in context and show the popup message
+          if (backendResponse.ok) {
+            setUser(data); // Store user data in context
+            setIsLoggedIn(true); // Set login state to true  
+            handleLogin()
+          } else {
+            console.error("Login failed:", data.message);
+          }
       } catch (error) {
           console.error("Error logging in:", error);
       }
