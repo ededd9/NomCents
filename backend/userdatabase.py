@@ -1,9 +1,9 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import json
-from flask import Flask, abort,request
-from flask_cors import CORS
+from flask import Flask, abort, jsonify,request
 import requests, math
+from flask_cors import CORS
 ##the authenticator produces output of form 
 ##    { "id": "1234", "given_name": "John", "name": "John Doe", "email": "john_doe@idp.example" }
 ## for now we can just store that whole thing, we will use the email as the indexing entity tho because theoretically we might want to support email password logins
@@ -50,16 +50,16 @@ class datauser():
             return True
         else:
             return False
-    def makeUser(self,userstring):
-        userdet=json.loads(userstring)
-        if(not data.isUser(userstring)):
+    def makeUser(self,userdet):
+        usstring=('{"email":"'+ userdet['email']+'"}')
+        if(not data.isUser(usstring)):
             self.atlas_client.insWrapper(userdet,self.collection_name)
             return True
         else:
             return False
-    def editUser(self,userstring):
-        userdet=json.loads(userstring)
-        if(not data.isUser(userstring)):
+    def editUser(self,userdet):
+        usstring=('{"email":"'+ userdet['email']+'"}')
+        if(not data.isUser(usstring)):
             return False
         else:
             self.atlas_client.upWrapper(userdet,self.collection_name)
@@ -86,33 +86,40 @@ class datauser():
 # print(data.isUser(usstring))
 
 app = Flask(__name__)
+CORS(app) # allows cross-origin requests, which is needed for the frontend to access the backend
+
 data = datauser (ATLAS_URI, DB_NAME,COLLECTION_NAME)
 
-CORS(app) # allows cross-origin requests, which is needed for the frontend to access the backend
+# get takes ?email= and the other two methods take json for the user as teh user variable
 @app.route('/api/user', methods=['GET', 'POST', 'PUT'])
 def user():
+    print(request.method)
     if request.method == 'GET':
-        email = request.args['email']
+        # usstring=request.args['user']
+        email=request.args['email']
         usstring=('{"email":"'+ email+'"}')
+
         user=data.userLookup(usstring)
         if(not (user is None)):
-            return json.dump(user)
+            user['_id'] = str(user['_id'])
+            return jsonify(user)
         else:
             abort(404)
     elif request.method== 'POST':
-        usstring=request.args['user']
-        if data.makeUser(usstring):
-            return usstring
+        udat=request.get_json()
+        if data.makeUser(udat):
+                return jsonify({"message": "User made successfully"}), 200
+ 
         else:
             abort(404)
     elif request.method== 'PUT':
-        usstring=request.args['user']
-        if data.editUser(usstring):
-            return usstring
+        udat=request.get_json()
+        if data.editUser(udat):
+                return jsonify({"message": "User updated successfully"}), 200
+ 
         else:
             abort(404)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
 
