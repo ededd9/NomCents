@@ -1,63 +1,68 @@
-import { useRoutes } from 'react-router-dom';
-import './App.css';
-import { LoginProvider, LoginContext } from './contexts/LoginContext';
-import Homepage from './pages/Homepage';
-import LoginPage from './pages/LoginPage';
-import Profile from './pages/Profile';
-import ViewProducts from './pages/ViewProducts';
-import ViewProductDetails from './pages/ViewProductDetails';
-import EditGroceryEntry from './pages/EditGroceryEntry';
+import { useRoutes } from "react-router-dom";
+import "./App.css";
+import { LoginProvider, LoginContext } from "./contexts/LoginContext";
+import Homepage from "./pages/Homepage";
+import LoginPage from "./pages/LoginPage";
+import Profile from "./pages/Profile";
+import ViewProducts from "./pages/ViewProducts";
+import ViewProductDetails from "./pages/ViewProductDetails";
+import EditGroceryEntry from "./pages/GroceryCartPage";
+import GroceryCartPage from "./pages/GroceryCartPage";  
 
 function App() {
-
   // Set up routes
   let element = useRoutes([
     {
       path: "/",
-      element: <Homepage />
+      element: <Homepage />,
     },
     {
       path: "/login",
-      element: <LoginPage />
+      element: <LoginPage />,
     },
     {
       path: "/profile/:username",
-      element: <Profile />
+      element: <Profile />,
     },
     {
       path: "/products",
-      element: <ViewProducts />
+      element: <ViewProducts />,
     },
     {
       path: "/products/details/:id",
-      element: <ViewProductDetails />
+      element: <ViewProductDetails />,
     },
     {
       path: "/grocery-list-entry/edit/:id",
-      element: <EditGroceryEntry />
-    }
+      element: <EditGroceryEntry />,
+    },
+    {
+      path: "/grocery-cart",   
+      element: <GroceryCartPage />,
+    },
   ]);
 
   return (
     <LoginProvider>
-      <div className='App'>
-        <div className='NavBar'>
-          <a href='/'>Home</a>
-          <a href='/products'>Products</a>
-          <a href='/profile/:username'>Profile</a>
+      <div className="App">
+        <div className="NavBar">
+          <a href="/">Home </a>
+          <a href="/products">Products </a>
+          <a href="/profile/:username">Profile </a>
+          <a href="/grocery-cart"> ViewCart </a> 
           <LoginContext.Consumer>
-            {({ isLoggedIn, setIsLoggedIn }) => (
+            {({ isLoggedIn, setIsLoggedIn }) =>
               isLoggedIn ? (
                 <button onClick={() => {
                   setIsLoggedIn(false);
                   window.location.href = '/'; // Redirect to homepage after logout
                 }}>Logout</button>
               ) : (
-                <a href='/login'>Login</a>
+                <a href="/login"> Login</a>
               )
-            )}
+            }
           </LoginContext.Consumer>
-        </div>  
+        </div>
         {element}
       </div>
     </LoginProvider>
