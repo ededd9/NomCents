@@ -129,7 +129,7 @@ def verify_google_token():
         email = user_info['email']
         user = data.userLookup(json.dumps({"email": email}))
         if not user:
-            return jsonify({"message": "Not a User"}), 404
+            return jsonify({"message":  "User does not exist"}), 404
         return jsonify(user_info), 200
     else:
         return jsonify({"message": "Invalid token"}), 400
