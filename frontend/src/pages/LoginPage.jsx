@@ -35,9 +35,30 @@ const LoginPage = () => {
   });
 
   //When signing in with google console log the user credential and send it to backend 
-  const handleSuccess = (credentialResponse) => {
+  const handleSuccess = async (credentialResponse) => {
     console.log(jwtDecode(credentialResponse.credential))
+    const {sub, given_name, name, email}= jwtDecode(credentialResponse.credential)
+    const token = {
+      _id:sub,
+      _given_name: given_name,
+      _name:name,
+      _email:email,
+    };
+    console.log(token)
     //Still need to send to backend on success
+    try {
+          const backendResponse = await fetch("http://localhost:5173/auth/google", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: token // Send the userdata to backend
+          });
+
+          const data = await backendResponse.json();
+          console.log("Backend response:", data);
+          handleLogin()
+      } catch (error) {
+          console.error("Error logging in:", error);
+      }
     //Then show the popup and navigate to home after delay
     handleLogin()
   };
