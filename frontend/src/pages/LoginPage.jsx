@@ -6,6 +6,8 @@ import { jwtDecode } from 'jwt-decode'
 
 import Popup from '../components/PopUp';
 
+const BACKEND_API_URL = "http://127.0.0.1:5000/api";
+
 const LoginPage = () => {
   const { setIsLoggedIn, setUser } = useContext(LoginContext);
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ const LoginPage = () => {
     onSuccess: async (response) => {
       const token = response.credential; // Get the ID token
       try {
-          const backendResponse = await fetch("http://localhost:5000/auth/google", {
+          const backendResponse = await fetch(`${BACKEND_API_URL}/auth/google`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ token })  // Send token to backend
@@ -45,20 +47,14 @@ const LoginPage = () => {
   //When signing in with google console log the user credential and send it to backend 
   const handleSuccess = async (credentialResponse) => {
     console.log(jwtDecode(credentialResponse.credential))
-    const {sub, given_name, name, email}= jwtDecode(credentialResponse.credential)
-    const token = {
-      _id:sub,
-      _given_name: given_name,
-      _name:name,
-      _email:email,
-    };
+    const token = credentialResponse.credential;
     console.log(token)
     //Send to backend on success
     try {
-          const backendResponse = await fetch("http://localhost:5000/auth/google", {
+          const backendResponse = await fetch(`${BACKEND_API_URL}/auth/google`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: token // Send the userdata to backend
+              body: JSON.stringify({ token })  // Send the userdata to backend
           });
 
           const data = await backendResponse.json();

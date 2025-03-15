@@ -1,7 +1,9 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import Popup from "../components/PopUp";
 import "./ViewProducts.css";
+
+const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 function ViewProducts() {
   const [product, setProduct] = useState("");
@@ -12,18 +14,65 @@ function ViewProducts() {
   const [totalPages, setTotalPages] = useState(1);
 
   // Stuff for conditional (logged in/logged out) add to cart pop up display
-  const { isLoggedIn } = useContext(LoginContext);
+  const { isLoggedIn, user } = useContext(LoginContext);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [showLoginButton, setShowLoginButton] = useState(false);
 
+  // Fetch grocery list when user logs in
+  useEffect(() => {
+    
+    if (isLoggedIn && user) {
+      fetchGroceryList(user.email);
+    }
+  
+  }, [isLoggedIn, user]);
+
+  // Function to fetch grocery list from backend
+  const fetchGroceryList = async (email) => {
+    
+    try {
+    
+      const response = await fetch(`${BACKEND_API_URL}/user?email=${email}`);
+    
+      if (response.ok) {
+        const userData = await response.json();
+        console.log("User data:", userData);
+        setGroceryList(userData.groceryList || []);
+      }
+    
+    } catch (error) {
+      console.error("Error fetching grocery list:", error);
+    }
+  };
+
+  // Function to update grocery list in backend
+  const updateGroceryList = async (email, newGroceryList) => {
+    
+    try {
+      
+      await fetch(`${BACKEND_API_URL}/user`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, groceryList: newGroceryList }),
+      });
+
+    } catch (error) {
+      console.error("Error updating grocery list:", error);
+    }
+  };
+
   // Function to search for products
   const searchProducts = async (page = 1) => {
+  
     try {
+  
       setIsLoading(true);
-
+  
       const response = await fetch(
-        `http://127.0.0.1:5000/api/search?product=${product}&page=${page}&pageSize=10`
+        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10`
       );
 
       if (!response.ok) {
@@ -40,36 +89,50 @@ function ViewProducts() {
 
       setTotalPages(data.paging_info.total_pages);
       setIsLoading(false);
+    
     } catch (error) {
+    
       console.error("Error fetching products:", error);
       setIsLoading(false);
     }
   };
 
+  // Function to load more products
   const loadMoreProducts = () => {
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
     searchProducts(nextPage);
   };
 
+  
   // Functions for adding/removing/incrementing/decrementing item from grocery list
   const addToGroceryList = (product) => {
+  
     // If user is logged in, add product to grocery list and show success pop up
-    if (isLoggedIn) {
+    if (isLoggedIn && user) {
+  
       const existingProduct = groceryList.find(
         (item) => item.fdcId === product.fdcId
       );
-
+  
+      let newGroceryList;
+  
       if (existingProduct) {
+  
         // If product already exists in grocery list, increment quantity by 1
         existingProduct.quantity += 1;
-        setGroceryList([...groceryList]);
+        newGroceryList = [...groceryList];
+  
       } else {
+  
         // If product doesn't exist in grocery list, add it with quantity of 1
         product.quantity = 1;
-        setGroceryList([...groceryList, product]);
+        newGroceryList = [...groceryList, product];
+  
       }
-
+  
+      setGroceryList(newGroceryList);
+      updateGroceryList(user.email, newGroceryList);
       setShowPopup(true);
       setPopupMessage("Product added to grocery list!");
       setShowLoginButton(false);
@@ -88,38 +151,45 @@ function ViewProducts() {
 
   const removeFromGroceryList = (product) => {
     // Remove product from grocery list and show success pop up
-    setGroceryList(groceryList.filter((item) => item.fdcId !== product.fdcId));
+    if (isLoggedIn && user) {
+      const newGroceryList = groceryList.filter((item) => item.fdcId !== product.fdcId);
+      setGroceryList(newGroceryList);
+      updateGroceryList(user.email, newGroceryList);
+      setShowPopup(true);
+      setPopupMessage("Product removed from grocery list!");
+      setShowLoginButton(false);
 
-    setShowPopup(true);
-    setPopupMessage("Product removed from grocery list!");
-    setShowLoginButton(false);
-
-    // Close popup after 5 seconds if user doesn't click OK
-    setTimeout(() => {
-      setShowPopup(false);
-    }, 5000);
+      // Close popup after 5 seconds if user doesn't click OK
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
+    }
   };
 
   const incrementQuantity = (product) => {
     // Increment quantity of product in grocery list
-    setGroceryList(
-      groceryList.map((item) =>
+    if (isLoggedIn && user) {
+      const newGroceryList = groceryList.map((item) =>
         item.fdcId === product.fdcId
           ? { ...item, quantity: item.quantity + 1 }
           : item
-      )
-    );
+      );
+      setGroceryList(newGroceryList);
+      updateGroceryList(user.email, newGroceryList);
+    }
   };
 
   const decrementQuantity = (product) => {
     // Decrement quantity of product in grocery list
-    setGroceryList(
-      groceryList.map((item) =>
+    if (isLoggedIn && user) {
+      const newGroceryList = groceryList.map((item) =>
         item.fdcId === product.fdcId && item.quantity > 1
           ? { ...item, quantity: item.quantity - 1 }
           : item
-      )
-    );
+      );
+      setGroceryList(newGroceryList);
+      updateGroceryList(user.email, newGroceryList);
+    }
   };
 
   // Popup close function to pass to Popup component
@@ -153,39 +223,16 @@ function ViewProducts() {
                 <div key={product.fdcId}>
                   <div className="product-card">
                     <h3>{product.name}</h3>
-                    <p>Brand: {product.brand}</p>
+                    <p>Brand: {product.brandName}</p>
                     <p>Ingredients: {product.ingredients}</p>
                     <p>
                       <ul>
-                        {product.nutrition
-                          ? Object.entries(product.nutrition).map(
-                              ([key, value]) => {
-                                if (
-                                  typeof value === "object" &&
-                                  value !== null
-                                ) {
-                                  return (
-                                    <li key={key}>
-                                      {key}:
-                                      <ul>
-                                        {Object.entries(value).map(
-                                          ([subKey, subValue]) => (
-                                            <li key={subKey}>
-                                              {subKey}: {subValue}
-                                            </li>
-                                          )
-                                        )}
-                                      </ul>
-                                    </li>
-                                  );
-                                }
-                                return (
-                                  <li key={key}>
-                                    {key}: {value}
-                                  </li>
-                                );
-                              }
-                            )
+                        {product.foodNutrients
+                          ? product.foodNutrients.map((nutrient) => (
+                              <li key={nutrient.nutrientId}>
+                                {nutrient.nutrientName}: {nutrient.value}
+                              </li>
+                            ))
                           : "None"}
                       </ul>
                     </p>
@@ -221,10 +268,7 @@ function ViewProducts() {
           showLoginButton={showLoginButton}
         />
       )}
-      <button
-        onClick={loadMoreProducts}
-        disabled={isLoading || currentPage >= totalPages}
-      >
+      <button onClick={loadMoreProducts} disabled={isLoading || currentPage >= totalPages}>
         {isLoading ? "Loading..." : "Load More"}
       </button>
     </div>
