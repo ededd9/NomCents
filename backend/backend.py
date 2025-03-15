@@ -4,6 +4,7 @@ import json
 from flask import Flask, abort, jsonify,request
 import requests, math
 from flask_cors import CORS
+
 ##the authenticator produces output of form 
 ##    { "id": "1234", "given_name": "John", "name": "John Doe", "email": "john_doe@idp.example" }
 ## for now we can just store that whole thing, we will use the email as the indexing entity tho because theoretically we might want to support email password logins
@@ -86,7 +87,7 @@ class datauser():
 # print(data.isUser(usstring))
 
 app = Flask(__name__)
-CORS(app) # allows cross-origin requests, which is needed for the frontend to access the backend
+CORS(app)
 
 data = datauser (ATLAS_URI, DB_NAME,COLLECTION_NAME)
 
