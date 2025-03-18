@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GroceryCart from "./GroceryCart";
+import GroceryCart from "../components/GroceryCart";
 
 // Import images from the assets folder
 // import breadImage from "../assets/bread.jpg";

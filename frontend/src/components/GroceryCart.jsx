@@ -1,5 +1,6 @@
 const GroceryCart = ({ cartItems, incrementQuantity, decrementQuantity, removeItem }) => {
-    return (
+
+  return (
       <div>
         {cartItems.length === 0 ? (
           <p>Your cart is empty.</p>

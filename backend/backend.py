@@ -4,6 +4,7 @@ import json
 from flask import Flask, abort, jsonify,request
 import requests, math
 from flask_cors import CORS
+from bson import ObjectId
 
 ##the authenticator produces output of form 
 ##    { "id": "1234", "given_name": "John", "name": "John Doe", "email": "john_doe@idp.example" }
@@ -64,7 +65,7 @@ class datauser():
             return False
         else:
             self.atlas_client.upWrapper(userdet,self.collection_name)
-            return True;
+            return True
 
 
 
@@ -131,6 +132,8 @@ def verify_google_token():
         user = data.userLookup(json.dumps({"email": email}))
         if not user:
             data.makeUser(user_info)
+        else:
+            user_info['_id'] = str(user['_id'])  # Convert ObjectId to string
         return jsonify(user_info), 200
     else:
         return jsonify({"message": "Invalid token"}), 400
