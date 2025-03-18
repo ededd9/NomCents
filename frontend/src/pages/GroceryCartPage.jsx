@@ -1,49 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import GroceryCart from "../components/GroceryCart";
+import { LoginContext } from "../contexts/LoginContext";
+//import "./GroceryCartPage.css";
 
-// Import images from the assets folder
-// import breadImage from "../assets/bread.jpg";
-// import milkImage from "../assets/milk.jpg";
-// import cokeZeroImage from "../assets/coke_zero.jpg";
-// import ketchupImage from "../assets/ketchup.jpg";
+const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 const GroceryCartPage = () => {
-  // Initial grocery list with imported images
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Jason's Sourdough White Ciabattin Bread",
-      image: breadImage,
-      quantity: 1,
-    },
-    { id: 2, name: "Jaouda Milk", image: milkImage, quantity: 1 },
-    { id: 3, name: "Coca-Cola Zero", image: cokeZeroImage, quantity: 1 },
-    { id: 4, name: "Heinz Tomato Ketchup", image: ketchupImage, quantity: 1 },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
+  const { isLoggedIn, user } = useContext(LoginContext);
+
+  // Fetch grocery list when user logs in
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      fetchGroceryList(user.email);
+    }
+  }, [isLoggedIn, user]);
+
+  // Function to fetch grocery list from backend
+  const fetchGroceryList = async (email) => {
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/user?email=${email}`);
+      if (response.ok) {
+        const userData = await response.json();
+        console.log("User data:", userData);
+        setCartItems(userData.groceryList || []);
+      }
+    } catch (error) {
+      console.error("Error fetching grocery list:", error);
+    }
+  };
+
+  // Function to update grocery list in backend
+  const updateGroceryList = async (newGroceryList) => {
+    try {
+      console.log("Updating grocery list for email:", user.email);
+      console.log("New grocery list:", newGroceryList);
+
+      const response = await fetch(`${BACKEND_API_URL}/user`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email, groceryList: newGroceryList }),
+      });
+
+      console.log("Update grocery list response:", response);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Update grocery list response data:", data);
+    } catch (error) {
+      console.error("Error updating grocery list:", error);
+    }
+  };
 
   // Function to increment quantity
-  const incrementQuantity = (id) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
+  const incrementQuantity = (fdcId) => {
+    const newGroceryList = cartItems.map((item) =>
+      item.fdcId === fdcId ? { ...item, quantity: item.quantity + 1 } : item
     );
+    setCartItems(newGroceryList);
+    updateGroceryList(newGroceryList);
   };
 
   // Function to decrement quantity
-  const decrementQuantity = (id) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
+  const decrementQuantity = (fdcId) => {
+    const newGroceryList = cartItems.map((item) =>
+      item.fdcId === fdcId && item.quantity > 1
+        ? { ...item, quantity: item.quantity - 1 }
+        : item
     );
+    setCartItems(newGroceryList);
+    updateGroceryList(newGroceryList);
   };
 
   // Function to remove item
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+  const removeItem = (fdcId) => {
+    const newGroceryList = cartItems.filter((item) => item.fdcId !== fdcId);
+    setCartItems(newGroceryList);
+    updateGroceryList(newGroceryList);
   };
 
   return (

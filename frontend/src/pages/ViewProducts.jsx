@@ -137,7 +137,7 @@ function ViewProducts() {
       setPopupMessage("Product added to grocery list!");
       setShowLoginButton(false);
 
-      // Close popup after 5 seconds if user doesn't click on it
+      // Close popup after 5 seconds
       setTimeout(() => {
         setShowPopup(false);
       }, 5000);
@@ -159,7 +159,7 @@ function ViewProducts() {
       setPopupMessage("Product removed from grocery list!");
       setShowLoginButton(false);
 
-      // Close popup after 5 seconds if user doesn't click OK
+      // Close popup after 5 seconds
       setTimeout(() => {
         setShowPopup(false);
       }, 5000);
