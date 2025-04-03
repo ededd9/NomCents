@@ -69,6 +69,13 @@ function ViewProducts() {
   
     try {
   
+      // Handle case where page # > total pages
+      if (page > totalPages) {
+        console.warn("Page number exceeds total pages. No more results to fetch.");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
   
       const response = await fetch(
