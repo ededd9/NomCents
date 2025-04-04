@@ -19,6 +19,12 @@ function ViewProducts() {
   const [popupMessage, setPopupMessage] = useState("");
   const [showLoginButton, setShowLoginButton] = useState(false);
 
+  // Stuff for additional search filtering (query params)
+  const [dataType, setDataType] = useState([]); // Array to hold selected data types
+  const [sortBy, setSortBy] = useState("dataType.keyword"); // Making default sortBy dataType instead of description since description was searching the ingredient lists
+  const [sortOrder, setSortOrder] = useState("asc"); // Default sort order is ascending
+  const [brandOwner, setBrandOwner] = useState(""); 
+
   // Fetch grocery list when user logs in
   useEffect(() => {
     
@@ -69,10 +75,18 @@ function ViewProducts() {
   
     try {
   
+      // Handle case where page # > total pages
+      if (page > totalPages) {
+        console.warn("Page number exceeds total pages. No more results to fetch.");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
   
       const response = await fetch(
-        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10`
+        // Include all query params that aren't null or empty
+        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}`
       );
 
       if (!response.ok) {
@@ -197,11 +211,25 @@ function ViewProducts() {
     setShowPopup(false);
   };
 
+  // Function to handle data type checkbox changes
+  const handleDataTypeChange = (event) => {
+    const value = event.target.value;
+    setDataType((prevDataTypes) => {
+      if (prevDataTypes.includes(value)) {
+        // If already selected, remove it
+        return prevDataTypes.filter((type) => type !== value);
+      } else {
+        // If not selected, add it
+        return [...prevDataTypes, value];
+      }
+    });
+  };
+
   return (
     <div className="ViewProducts">
       <h1>NomCents</h1>
 
-      <div>
+      <div className="search-filters">
         <input
           type="text"
           placeholder="Search for a product..."
@@ -209,6 +237,58 @@ function ViewProducts() {
           onChange={(e) => setProduct(e.target.value)}
         />
         <button onClick={() => searchProducts(1)}>Search</button>
+        
+        <fieldset>
+          <legend>Data Type</legend>
+          <label>
+            <input type="checkbox" value="Branded" onChange={handleDataTypeChange} /> Branded
+          </label>
+          <label>
+            <input type="checkbox" value="Foundation" onChange={handleDataTypeChange} /> Foundation
+          </label>
+          <label>
+            <input type="checkbox" value="Survey (FNDDS)" onChange={handleDataTypeChange} /> Survey (FNDDS)
+          </label>
+          <label>
+            <input type="checkbox" value="SR Legacy" onChange={handleDataTypeChange} /> SR Legacy
+          </label>
+          <label>
+            <input type="checkbox" value="Experimental" onChange={handleDataTypeChange} /> Experimental
+          </label>
+          <label>
+            <input type="checkbox" value="Other" onChange={handleDataTypeChange} /> Other
+          </label>
+        </fieldset>
+
+        <label htmlFor="sortBy">Sort By</label>
+        <select id="sortBy" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="dataType.keyword">Data Type</option>
+          <option value="fdcId">FDC ID</option>
+          <option value="lowercaseDescription.keyword">Ingredients</option>
+          <option value="brandOwner.keyword">Brand Owner</option>
+          <option value="publishedDate">Published Date</option>
+          <option value="modifiedDate">Modified Date</option>
+        </select>
+
+        <label htmlFor="sortOrder">Sort Order</label>
+        <select
+          id="sortOrder"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+
+        <label htmlFor="brandOwner">Brand Owner</label>
+        <input
+          type="text"
+          id="brandOwner"
+          placeholder="Enter brand owner (optional)..."
+          value={brandOwner}
+          onChange={(e) => setBrandOwner(e.target.value)}
+        />
+
       </div>
 
       <div>
@@ -223,7 +303,8 @@ function ViewProducts() {
                 <div key={product.fdcId}>
                   <div className="product-card">
                     <h3>{product.name}</h3>
-                    <p>Brand: {product.brandName}</p>
+                    <p> Brand Owner: {product.brandOwner}</p>
+                    <p> Brand Name: {product.brandName}</p>
                     <p>Ingredients: {product.ingredients}</p>
                     <p>
                       <ul>
