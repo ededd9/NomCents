@@ -188,8 +188,8 @@ USDA_API_KEY = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN"
 
 @app.route('/api/search', methods=['GET'])
 def search_product():
-
-    '''
+    print("Making it into search_product() function...", flush=True)
+    """
     USDA food API query params for reference:
 
     query <string>
@@ -207,7 +207,7 @@ def search_product():
 
     sortBy <string>
     Optional. Specify one of the possible values to sort by that field. Note, dataType.keyword will be dataType and lowercaseDescription.keyword will be description in future releases.
-    Possible values: "description", "fdcId", "dataType", "brandOwner", "modifiedDate", "publishedDate". If not specified, the default sort order is by "description" in ascending order.
+    Possible values: "lowercaseDescription.keyword", "fdcId", "dataType.keyword", "brandOwner.keyword", "modifiedDate", "publishedDate". If not specified, the default sort order is by "lowercaseDescription.keyword" in ascending order.
 
     sortOrder <string>
     Optional. The sort direction for the results. Only applicable if sortBy is specified.
@@ -215,43 +215,52 @@ def search_product():
 
     brandOwner <string>
     Optional. Filter results based on the brand owner of the food. Only applies to Branded Foods.
-    '''
+    """
 
     # 'product' will be variable name for the query parameter in the website URL
     # default to page 1
     # default to 50 items per page
-    query = request.args.get('product')
-    page = request.args.get('page', default = 1, type = int)
-    page_size = request.args.get('pageSize', default = 50, type = int)
+    query = request.args.get("product")
+    page = request.args.get("page", default=1, type=int)
+    page_size = request.args.get("pageSize", default=50, type=int)
     # Adding filtering query params with default values (if applicable)
-    data_type = request.args.getlist('dataType')  # Retrieves all values for 'dataType' as a list
-    sort_by = request.args.get('sortBy', default="description", type=str)
-    sort_order = request.args.get('sortOrder', default="asc", type=str)
-    brand_owner = request.args.get('brandOwner', default=None, type=str)
-    
-    params = {"query": query, 
-              "pageSize": page_size,
-              "pageNumber": page, # use page number in the request
-              "sortBy": sort_by,
-              "sortOrder": sort_order,
-              "api_key": USDA_API_KEY
-             }
-    
-    # Only add dataType to params if it's not None
-    if data_type:
+    data_type = request.args.getlist(
+        "dataType"
+    )  # Retrieves all values for 'dataType' as a list
+    sort_by = request.args.get("sortBy", type=str)
+    sort_order = request.args.get("sortOrder", type=str)
+    brand_owner = request.args.get("brandOwner", default=None, type=str)
+
+    params = {
+        "query": query,
+        "pageSize": page_size,
+        "pageNumber": page,  # use page number in the request
+        "sortOrder": sort_order,
+        "api_key": USDA_API_KEY,
+    }
+
+    if sort_by:
+        params["sortBy"] = sort_by
+
+    # Only add dataType to params if it's not empty
+    if data_type and all(item != "" for item in data_type):
         params["dataType"] = data_type
 
-    # Only add brandOwner to params if it's not None
-    if brand_owner:
+    # Only add brandOwner to params if it's not an empty string
+    if brand_owner != "" and brand_owner is not None:
         params["brandOwner"] = brand_owner
+
+    print(
+        "Search parameters:", params, flush=True
+    )  # Debug print to check the parameters being sent to the API
 
     # error checking, 400 = bad request
     if not query:
         return jsonify({"error": "did not enter search query :("}), 400
-    
+
     # make USDA API request WITH PAGING
-    response = requests.get(USDA_API_URL, 
-                            params=params)
+    response = requests.get(USDA_API_URL, params=params)
+    print("USDA API Request URL:", response.url, flush=True)
 
     # error checking for response var
     if response.status_code != 200:
@@ -284,7 +293,8 @@ def search_product():
     for food in foods:
         # need these parameters for image querying
         name = food.get("description", "Unknown")
-        brand = food.get("brandOwner", "Unknown")
+        brandOwner = food.get("brandOwner", "Unknown")
+        brandName = food.get("brandName", "N/A")
         
         # get image url using google search api
         # image_url = get_product_image(name, brand)
@@ -292,7 +302,8 @@ def search_product():
         food_info = {
             "fdcId": food.get("fdcId"),
             "name": name,
-            "brand": brand,
+            "brandOwner": brandOwner,
+            "brandName": brandName,
             "ingredients": food.get("ingredients", "Ingredients not available"),
             "nutrition": {
                 "calories": None,
