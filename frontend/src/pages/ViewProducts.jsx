@@ -28,15 +28,11 @@ function ViewProducts() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [brandOwner, setBrandOwner] = useState("");
 
-<<<<<<< HEAD
-  // Fetch user data (grocery list and favorites) when user logs in
-=======
   // Stuff for product details popup
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductDetails, setShowProductDetails] = useState(false);
 
   // Fetch grocery list when user logs in
->>>>>>> origin/main
   useEffect(() => {
     if (isLoggedIn && user) {
       fetchUserData(user.email);
@@ -271,8 +267,6 @@ function ViewProducts() {
     });
   };
 
-<<<<<<< HEAD
-=======
   const viewProductDetails = (product) => {
     setSelectedProduct(product);
     setShowProductDetails(true);
@@ -282,7 +276,6 @@ function ViewProducts() {
     setSelectedProduct(null);
     setShowProductDetails(false);
   };
->>>>>>> origin/main
 
   return (
     <div className="ViewProducts">
@@ -359,62 +352,6 @@ function ViewProducts() {
                  (item) => item.fdcId === product.fdcId
               );
               return (
-<<<<<<< HEAD
-                <div key={product.fdcId} className="product-card"> {/* Use div for card layout */}
-                    <h3>{product.description || product.name}</h3>
-                    <p> Brand Owner: {product.brandOwner || 'N/A'}</p>
-                    <p> Data Type: {product.dataType}</p>
-                    <p> FDC ID: {product.fdcId}</p>
-                    <p>Ingredients: {product.ingredients || 'N/A'}</p>
-
-                    {/* RESTORED: Original Nutrients Rendering */}
-                    <p>
-                      Nutrients:
-                      <ul>
-                        {product.foodNutrients && product.foodNutrients.length > 0
-                          ? product.foodNutrients.slice(0, 5).map((nutrient) => ( // Limit displayed nutrients
-                              <li key={nutrient.nutrientId}>
-                                {nutrient.nutrientName || nutrient.nutrient?.name}: {nutrient.amount || nutrient.value}{nutrient.nutrient?.unitName || nutrient.unitName}
-                              </li>
-                            ))
-                          : " Not available"}
-                      </ul>
-                      {product.foodNutrients && product.foodNutrients.length > 5 ? '...' : ''}
-                    </p>
-                    {/* --- End of Restored Nutrients --- */}
-
-                    {/* Favorite Button (KEEP) */}
-                    {isFavorite ? (
-                       <button onClick={() => removeFromFavorites(product)} style={{backgroundColor: 'lightcoral', marginRight: '10px'}}> {/* Added margin */}
-                         Unfavorite
-                       </button>
-                    ) : (
-                       <button onClick={() => addToFavorites(product)} style={{backgroundColor: 'lightgreen', marginRight: '10px'}}> {/* Added margin */}
-                         Favorite
-                       </button>
-                    )}
-
-                    {/* Grocery List Buttons */}
-                    {inGroceryList ? (
-                      <div style={{display: 'inline-block'}}> {/* Use inline-block to keep buttons together */}
-                        <button onClick={() => decrementQuantity(product)}>
-                          -
-                        </button>
-                        <span style={{margin: '0 5px'}}>In Cart: {inGroceryList.quantity}</span>
-                        <button onClick={() => incrementQuantity(product)}>
-                          +
-                        </button>
-                        <button onClick={() => removeFromGroceryList(product)} style={{marginLeft: '10px', color: 'red'}}>
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={() => addToGroceryList(product)}>
-                        Add to Grocery List
-                      </button>
-                    )}
-                 </div>
-=======
                 <div key={product.fdcId}>
                   <div className="product-card" 
                   onClick={() => viewProductDetails(product)} // Open product details popup on click
@@ -454,7 +391,6 @@ function ViewProducts() {
                       )}
                     </div>
                   </div>
->>>>>>> origin/main
               );
             })}
           </div>
@@ -474,8 +410,6 @@ function ViewProducts() {
         )}
       </div>
 
-<<<<<<< HEAD
-=======
       {/* Product Details Popup */}
       {showProductDetails && selectedProduct && (
         <Popup
@@ -522,7 +456,6 @@ function ViewProducts() {
       <button onClick={loadMoreProducts} disabled={isLoading || currentPage >= totalPages}>
         {isLoading ? "Loading..." : "Load More"}
       </button>
->>>>>>> origin/main
     </div>
   );
 }
