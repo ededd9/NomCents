@@ -5,7 +5,8 @@ from flask import Flask, abort, jsonify,request
 import requests, math
 from flask_cors import CORS
 from bson import ObjectId
-
+from werkzeug.security import generate_password_hash, check_password_hash
+import re
 ##the authenticator produces output of form 
 ##    { "id": "1234", "given_name": "John", "name": "John Doe", "email": "john_doe@idp.example" }
 ## for now we can just store that whole thing, we will use the email as the indexing entity tho because theoretically we might want to support email password logins
@@ -137,6 +138,59 @@ def verify_google_token():
         return jsonify(user_info), 200
     else:
         return jsonify({"message": "Invalid token"}), 400
+#register / login logic w just email / password ( no g auth)
+@app.route('/api/auth/email', methods=['POST'])
+def email_auth():
+    try:
+        #break up jsons data from req
+        request_data = request.get_json()
+        #get email pw and name from req
+        email = request_data.get('email')
+        password = request_data.get('password')
+        name = request_data.get('name', None)
+        #input validation --
+
+        #email and pw are required
+        if not email or not password:
+            return jsonify({"message": "Email and password are required"}), 400
+        #valid email format
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            return jsonify({"message": "Email format invalid"}), 400
+
+        #check if user is in db    
+        user = data.userLookup(json.dumps({"email": email}))
+        
+        # Check if this is a registration request (has name field)
+        if name is not None:
+            if user:
+                return jsonify({"message": "User already exists"}), 400
+            #encrypt pw
+            hashed_password = generate_password_hash(password)
+            #create new user data obj
+            user_data = {
+                "email": email,
+                "password": hashed_password,
+                "name": name
+            }
+            #create the user
+            if data.makeUser(user_data):
+                return jsonify({"message": "User registered successfully"}), 201
+            return jsonify({"message": "Registration failed"}), 400
+        else:
+            # This is a login request
+            #first check if user exists then check if password is correct
+            if not user:
+                return jsonify({"message": "User not found"}), 404
+            if not check_password_hash(user.get('password', ''), password):
+                return jsonify({"message": "Invalid credentials"}), 401
+            
+            user.pop('password', None)
+            user['_id'] = str(user['_id'])
+            return jsonify(user), 200
+
+    except Exception as e:
+        print(f"Error in email_auth: {str(e)}")
+        return jsonify({"message": "Internal server error"}), 500
 
 # NOTES
 # --------------
