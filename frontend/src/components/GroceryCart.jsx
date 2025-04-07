@@ -12,7 +12,7 @@ const GroceryCart = ({ cartItems, incrementQuantity, decrementQuantity, removeIt
                 <button onClick={() => decrementQuantity(product.fdcId)}>-</button>
                 <span style={{ margin: "0 10px" }}>{product.quantity}</span>
                 <button onClick={() => incrementQuantity(product.fdcId)}>+</button>
-                <button onClick={() => removeItem(product.fdcId)} style={{ marginLeft: "10px", color: "red" }}>Remove</button>
+                <button onClick={() => removeItem(product.fdcId)} style={{ marginLeft: "10px", color: "blue" }}>Remove</button>
               </li>
             ))}
           </ul>

@@ -6,8 +6,8 @@ import LoginPage from "./pages/LoginPage";
 import Profile from "./pages/Profile";
 import ViewProducts from "./pages/ViewProducts";
 import ViewProductDetails from "./pages/ViewProductDetails";
-import EditGroceryEntry from "./pages/GroceryCartPage";
-import GroceryCartPage from "./pages/GroceryCartPage";  
+import GroceryCartPage from "./pages/GroceryCartPage";
+import FavoritesPage from "./pages/FavoritesPage"; 
 
 function App() {
   // Set up routes
@@ -29,16 +29,16 @@ function App() {
       element: <ViewProducts />,
     },
     {
-      path: "/products/details/:id",
-      element: <ViewProductDetails />,
+      path: "/products/details/:id", 
+      element: <ViewProductDetails />, 
     },
     {
-      path: "/grocery-list-entry/edit/:id",
-      element: <EditGroceryEntry />,
-    },
-    {
-      path: "/grocery-cart",   
+      path: "/grocery-cart",
       element: <GroceryCartPage />,
+    },
+    { 
+      path: "/favorites",
+      element: <FavoritesPage />,
     },
   ]);
 
@@ -48,8 +48,9 @@ function App() {
         <div className="NavBar">
           <a href="/">Home </a>
           <a href="/products">Products </a>
-          <a href="/profile/:username">Profile </a>
-          <a href="/grocery-cart"> ViewCart </a> 
+          <a href="/favorites"> Favorites </a> 
+          <a href="/grocery-cart"> ViewCart </a>
+          <a href="/profile/:username">Profile </a> 
           <LoginContext.Consumer>
             {({ isLoggedIn, setIsLoggedIn }) =>
               isLoggedIn ? (

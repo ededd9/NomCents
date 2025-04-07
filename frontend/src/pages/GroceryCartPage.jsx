@@ -60,7 +60,7 @@ const GroceryCartPage = () => {
   // Function to increment quantity
   const incrementQuantity = (fdcId) => {
     const newGroceryList = cartItems.map((item) =>
-      item.fdcId === fdcId ? { ...item, quantity: item.quantity + 1 } : item
+      item.fdcId === fdcId ? { ...item, quantity: item.quantity + 3 } : item
     );
     setCartItems(newGroceryList);
     updateGroceryList(newGroceryList);
