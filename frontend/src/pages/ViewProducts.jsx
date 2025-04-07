@@ -6,6 +6,7 @@ import "./ViewProducts.css";
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 function ViewProducts() {
+
   const [product, setProduct] = useState("");
   const [results, setResults] = useState([]);
   const [groceryList, setGroceryList] = useState([]);
@@ -24,6 +25,10 @@ function ViewProducts() {
   const [sortBy, setSortBy] = useState("dataType.keyword"); // Making default sortBy dataType instead of description since description was searching the ingredient lists
   const [sortOrder, setSortOrder] = useState("asc"); // Default sort order is ascending
   const [brandOwner, setBrandOwner] = useState(""); 
+
+  // Stuff for product details popup
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showProductDetails, setShowProductDetails] = useState(false);
 
   // Fetch grocery list when user logs in
   useEffect(() => {
@@ -225,6 +230,16 @@ function ViewProducts() {
     });
   };
 
+  const viewProductDetails = (product) => {
+    setSelectedProduct(product);
+    setShowProductDetails(true);
+  };
+
+  const closeProductDetails = () => {
+    setSelectedProduct(null);
+    setShowProductDetails(false);
+  };
+
   return (
     <div className="ViewProducts">
       <h1>NomCents</h1>
@@ -301,47 +316,86 @@ function ViewProducts() {
               );
               return (
                 <div key={product.fdcId}>
-                  <div className="product-card">
-                    <h3>{product.name}</h3>
-                    <p> Brand Owner: {product.brandOwner}</p>
-                    <p> Brand Name: {product.brandName}</p>
-                    <p>Ingredients: {product.ingredients}</p>
-                    <p>
-                      <ul>
-                        {product.foodNutrients
-                          ? product.foodNutrients.map((nutrient) => (
-                              <li key={nutrient.nutrientId}>
-                                {nutrient.nutrientName}: {nutrient.value}
-                              </li>
-                            ))
-                          : "None"}
-                      </ul>
-                    </p>
-                    {inGroceryList ? (
-                      <>
-                        <button onClick={() => decrementQuantity(product)}>
-                          -
+                  <div className="product-card" 
+                  onClick={() => viewProductDetails(product)} // Open product details popup on click
+                  style={{ cursor: "pointer" }}>
+                      <h3>{product.name}</h3>
+                      <p>Brand Owner: {product.brandOwner}</p>
+                      <p>Brand Name: {product.brandName}</p>
+                      <p>Ingredients: {product.ingredients}</p>
+                      <p>
+                        <ul>
+                          {product.foodNutrients
+                            ? product.foodNutrients.map((nutrient) => (
+                                <li key={nutrient.nutrientId}>
+                                  {nutrient.nutrientName}: {nutrient.value}
+                                </li>
+                              ))
+                            : "None"}
+                        </ul>
+                      </p>
+                      {inGroceryList ? (
+                        <>
+                          <button onClick={() => decrementQuantity(product)}>
+                            -
+                          </button>
+                          <span>{inGroceryList.quantity}</span>
+                          <button onClick={() => incrementQuantity(product)}>
+                            +
+                          </button>
+                          <button onClick={() => removeFromGroceryList(product)}>
+                            Remove from Grocery List
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => addToGroceryList(product)}>
+                          Add to Grocery List
                         </button>
-                        <span>{inGroceryList.quantity}</span>
-                        <button onClick={() => incrementQuantity(product)}>
-                          +
-                        </button>
-                        <button onClick={() => removeFromGroceryList(product)}>
-                          Remove from Grocery List
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={() => addToGroceryList(product)}>
-                        Add to Grocery List
-                      </button>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
               );
             })}
           </div>
         </ul>
       </div>
+
+      {/* Product Details Popup */}
+      {showProductDetails && selectedProduct && (
+        <Popup
+          message={
+            <div>
+              <h1>{selectedProduct.name}</h1>
+              <p>Brand: {selectedProduct.brandName}</p>
+              <p>Brand Owner: {selectedProduct.brandOwner}</p>
+              <p>Ingredients: {selectedProduct.ingredients}</p>
+              <h2>Nutrition</h2>
+              <ul>
+                <li>Calories: {selectedProduct.nutrition.calories}</li>
+                <li>Protein: {selectedProduct.nutrition.protein}</li>
+                <li>Fat: {selectedProduct.nutrition.fat}</li>
+                <li>Carbohydrates: {selectedProduct.nutrition.carbohydrates}</li>
+                <li>Sugars: {selectedProduct.nutrition.sugars}</li>
+                <li>Fiber: {selectedProduct.nutrition.fiber}</li>
+              </ul>
+              <h2>Vitamins and Minerals</h2>
+              <ul>
+                {Object.entries(selectedProduct.nutrition.vitamins || {}).map(
+                  ([key, value]) => (
+                    <li key={key}>
+                      {key}: {value}
+                    </li>
+                  )
+                )}
+              </ul>
+              <button onClick={closeProductDetails}>Close</button>
+            </div>
+          }
+          closePopup={closeProductDetails}
+          showLoginButton={false}
+          popupType="product-details"
+        />
+      )}
       {showPopup && (
         <Popup
           message={popupMessage}
