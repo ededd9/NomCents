@@ -355,6 +355,8 @@ def search_product():
         
         food_info = {
             "fdcId": food.get("fdcId"),
+            # Add barcode for matching prices to products
+            "gtinUpc": food.get("gtinUpc", "N/A"),
             "name": name,
             "brandOwner": brandOwner,
             "brandName": brandName,
