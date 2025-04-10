@@ -8,14 +8,14 @@ const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 const FavoritesPage = () => {
   const [favoritesList, setFavoritesList] = useState([]);
-  const [groceryList, setGroceryList] = useState([]); // <-- State for grocery list
+  const [groceryList, setGroceryList] = useState([]); 
   const { isLoggedIn, user } = useContext(LoginContext);
   const [isLoading, setIsLoading] = useState(false);
 
   // --- Popup State ---
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
-  const [showLoginButton, setShowLoginButton] = useState(false); // Might not be needed here but keep for consistency
+  const [showLoginButton, setShowLoginButton] = useState(false);
   // --- End Popup State ---
 
   // Fetch user data (favorites and grocery list) when user logs in or changes
@@ -67,7 +67,6 @@ const FavoritesPage = () => {
       console.log("Update favorites list successful");
     } catch (error) {
       console.error("Error updating favorites list:", error);
-      // Consider reverting state or refetching on error
       // fetchUserData(user.email);
     }
   };
@@ -87,8 +86,6 @@ const FavoritesPage = () => {
       console.log("Update grocery list successful");
     } catch (error) {
       console.error("Error updating grocery list:", error);
-       // Consider reverting state or refetching on error
-       // fetchUserData(user.email);
     }
   };
 
@@ -105,7 +102,7 @@ const FavoritesPage = () => {
     if (!isLoggedIn || !user) {
         // This shouldn't typically happen on this page, but handle defensively
         setPopupMessage("Please log in first.");
-        setShowLoginButton(true); // Redirect to login?
+        setShowLoginButton(true); 
         setShowPopup(true);
         return;
     }
@@ -154,9 +151,9 @@ const FavoritesPage = () => {
       ) : (
         <FavoritesList
           favoritesList={favoritesList}
-          groceryList={groceryList} // <-- Pass grocery list down
+          groceryList={groceryList} n
           removeFromFavorites={removeFromFavorites}
-          addToGroceryList={addToGroceryList} // <-- Pass add function down
+          addToGroceryList={addToGroceryList} 
         />
       )}
       {/* --- Popup Component --- */}
