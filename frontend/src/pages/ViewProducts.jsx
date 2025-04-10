@@ -80,6 +80,9 @@ function ViewProducts() {
         },
         body: JSON.stringify({ email, groceryList: newGroceryList }),
       });
+
+      // fetch updated user data to log in console for debugging
+      fetchUserData(email);
  
     } catch (error) {
       console.error("Error updating grocery list:", error);
@@ -99,6 +102,9 @@ function ViewProducts() {
         // Send only email and the updated favorites list
         body: JSON.stringify({ email, favorites: newFavoritesList }),
       });
+
+      // fetch updated user data to log in console for debugging
+      fetchUserData(email);
       
     } catch (error) {
       console.error("Error updating favorites list:", error);
@@ -413,6 +419,15 @@ function ViewProducts() {
                       ) : (
                         <button onClick={(e) => { e.stopPropagation(); addToGroceryList(product); }}>
                           Add to Grocery List
+                        </button>
+                      )}
+                      {isFavorite ? (
+                        <button onClick={(e) => { e.stopPropagation(); removeFromFavorites(product); }}>
+                          Remove from Favorites
+                        </button>
+                      ) : (
+                        <button onClick={(e) => { e.stopPropagation(); addToFavorites(product); }}>
+                          Add to Favorites
                         </button>
                       )}
                     </div>

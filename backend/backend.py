@@ -115,13 +115,30 @@ def user():
  
         else:
             abort(404)
-    elif request.method== 'PUT':
-        udat=request.get_json()
-        if data.editUser(udat):
-                return jsonify({"message": "User updated successfully"}), 200
- 
+    elif request.method == 'PUT':
+        udat = request.get_json()
+        email = udat.get('email')
+
+        if not email:
+            return jsonify({"message": "Email is required"}), 400
+
+        # Retrieve the existing user data
+        existing_user = data.userLookup(json.dumps({"email": email}))
+
+        if not existing_user:
+            return jsonify({"message": "User not found"}), 404
+
+        # Merge the existing user data with the new data
+        updated_user = {**existing_user, **udat}
+
+        # Remove the MongoDB ObjectId field (_id) before updating
+        updated_user.pop('_id', None)
+
+        # Update the user in the database
+        if data.editUser(updated_user):
+            return jsonify({"message": "User updated successfully"}), 200
         else:
-            abort(404)
+            return jsonify({"message": "Failed to update user"}), 400
 
 @app.route('/api/auth/google', methods=['POST'])
 def verify_google_token():
