@@ -11,7 +11,7 @@ function ViewProducts() {
   const [product, setProduct] = useState("");
   const [results, setResults] = useState([]);
   const [groceryList, setGroceryList] = useState([]);
-  const [favoritesList, setFavoritesList] = useState([]); // <-- State for favorites (KEEP)
+  const [favoritesList, setFavoritesList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
@@ -32,37 +32,47 @@ function ViewProducts() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductDetails, setShowProductDetails] = useState(false);
 
-  // Fetch grocery list when user logs in
+  // Fetch lists when user logs in
   useEffect(() => {
     if (isLoggedIn && user) {
       fetchUserData(user.email);
     } else {
-      // Clear lists if user logs out
+      // Reset list states if user logs out
       setGroceryList([]);
-      setFavoritesList([]); // <-- Clear favorites list on logout (KEEP)
+      setFavoritesList([]); 
     }
   }, [isLoggedIn, user]);
 
+
   // Function to fetch user data (grocery list and favorites) from backend
-  const fetchUserData = async (email) => { // <-- Function now fetches favorites too (KEEP)
+  const fetchUserData = async (email) => {
+    
     try {
+        
       const response = await fetch(`${BACKEND_API_URL}/user?email=${email}`);
+  
+      // If response is okay...
       if (response.ok) {
+
+        // Set user data based on fetched data
         const userData = await response.json();
-        console.log("User data fetched:", userData);
+        console.log("User data:", userData);
+
+        // Set list states based on fetched data
         setGroceryList(userData.groceryList || []);
-        setFavoritesList(userData.favorites || []); // <-- Set favorites list (KEEP)
-      } else {
-          console.error("Failed to fetch user data:", response.statusText);
+        setFavoritesList(userData.favorites || []);
       }
+  
     } catch (error) {
-      console.error("Error fetching user data:", error);
+        console.error("Error fetching grocery list:", error);
     }
   };
 
   // Function to update grocery list in backend
   const updateGroceryListBackend = async (email, newGroceryList) => {
+ 
     try {
+ 
       await fetch(`${BACKEND_API_URL}/user`, {
         method: "PUT",
         headers: {
@@ -70,15 +80,17 @@ function ViewProducts() {
         },
         body: JSON.stringify({ email, groceryList: newGroceryList }),
       });
-      // Add response handling if needed
+ 
     } catch (error) {
       console.error("Error updating grocery list:", error);
     }
   };
 
-  // Function to update favorites list in backend <-- New function for favorites (KEEP)
+  // Function to update favorites list in backend
   const updateFavoritesListBackend = async (email, newFavoritesList) => {
+  
     try {
+
       await fetch(`${BACKEND_API_URL}/user`, {
         method: "PUT",
         headers: {
@@ -87,7 +99,7 @@ function ViewProducts() {
         // Send only email and the updated favorites list
         body: JSON.stringify({ email, favorites: newFavoritesList }),
       });
-       // Add response handling if needed
+      
     } catch (error) {
       console.error("Error updating favorites list:", error);
     }
@@ -96,10 +108,11 @@ function ViewProducts() {
 
   // Function to search for products
   const searchProducts = async (page = 1) => {
-    // ... (keep existing searchProducts logic from before)
+ 
     try {
+
       // Handle case where page # > total pages
-      if (page > totalPages && page !== 1) {
+      if (page > totalPages) {
         console.warn("Page number exceeds total pages. No more results to fetch.");
         setIsLoading(false);
         return;
@@ -108,7 +121,8 @@ function ViewProducts() {
       setIsLoading(true);
 
       const response = await fetch(
-        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType.join(',')}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}`
+        // Include all query params that aren't null or empty
+        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}`
       );
 
       if (!response.ok) {
@@ -117,18 +131,17 @@ function ViewProducts() {
 
       const data = await response.json();
 
-       // Reset results on new search (page 1), append otherwise
       if (page === 1) {
         setResults(data.results);
-        setCurrentPage(1); // Reset current page on new search
-        setTotalPages(data.paging_info.total_pages);
       } else {
         setResults((prevResults) => [...prevResults, ...data.results]);
       }
 
+      setTotalPages(data.paging_info.total_pages);
       setIsLoading(false);
 
     } catch (error) {
+
       console.error("Error fetching products:", error);
       setIsLoading(false);
     }
@@ -144,26 +157,41 @@ function ViewProducts() {
 
   // Functions for adding/removing/incrementing/decrementing item from grocery list
   const addToGroceryList = (product) => {
-    // ... (keep existing addToGroceryList logic)
+ 
+    // If user is logged in, add product to grocery list and show success pop up
     if (isLoggedIn && user) {
+
       const existingProduct = groceryList.find(
         (item) => item.fdcId === product.fdcId
       );
+
       let newGroceryList;
+
       if (existingProduct) {
+
+        // If product already exists in grocery list, increment quantity by 1
         existingProduct.quantity += 1;
         newGroceryList = [...groceryList];
+
       } else {
-        const productToAdd = { ...product, quantity: 1 };
-        newGroceryList = [...groceryList, productToAdd];
+
+        // If product doesn't exist in grocery list, add it with quantity of 1
+        product.quantity = 1;
+        newGroceryList = [...groceryList, product];
       }
+
       setGroceryList(newGroceryList);
       updateGroceryListBackend(user.email, newGroceryList);
       setShowPopup(true);
       setPopupMessage("Product added to grocery list!");
       setShowLoginButton(false);
-      setTimeout(() => setShowPopup(false), 3000); // Use the 3-second timeout
+
+      // Close popup after 5 seconds
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
     } else {
+      // Else, show popup prompting user to login with button to login page
       setShowPopup(true);
       setPopupMessage("Please log in to add products to your grocery list.");
       setShowLoginButton(true);
@@ -171,43 +199,43 @@ function ViewProducts() {
   };
 
   const removeFromGroceryList = (product) => {
-    // ... (keep existing removeFromGroceryList logic)
-     if (isLoggedIn && user) {
+    // Remove product from grocery list and show success pop up
+    if (isLoggedIn && user) {
       const newGroceryList = groceryList.filter((item) => item.fdcId !== product.fdcId);
       setGroceryList(newGroceryList);
       updateGroceryListBackend(user.email, newGroceryList);
-      // Optional: Show confirmation popup
+      setShowPopup(true);
+      setPopupMessage("Product removed from grocery list!");
+      setShowLoginButton(false);
+
+      // Close popup after 5 seconds
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
     }
   };
 
   const incrementQuantity = (product) => {
-    // ... (keep existing incrementQuantity logic)
+     // Increment quantity of product in grocery list
      if (isLoggedIn && user) {
-      const newGroceryList = groceryList.map((item) =>
-        item.fdcId === product.fdcId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-      setGroceryList(newGroceryList);
-      updateGroceryListBackend(user.email, newGroceryList);
-    }
-  };
+       const newGroceryList = groceryList.map((item) =>
+         item.fdcId === product.fdcId
+           ? { ...item, quantity: item.quantity + 1 }
+           : item
+       );
+       setGroceryList(newGroceryList);
+       updateGroceryListBackend(user.email, newGroceryList);
+     }
+   };
 
   const decrementQuantity = (product) => {
-    // ... (keep existing decrementQuantity logic)
+    // Decrement quantity of product in grocery list
     if (isLoggedIn && user) {
       const newGroceryList = groceryList.map((item) =>
         item.fdcId === product.fdcId && item.quantity > 1
           ? { ...item, quantity: item.quantity - 1 }
           : item
-      ).filter(item => !(item.fdcId === product.fdcId && item.quantity <= 1)); // Also remove if quantity becomes 0 or less
-
-      const itemExists = newGroceryList.some(item => item.fdcId === product.fdcId);
-      if (!itemExists && product.quantity === 1) {
-           removeFromGroceryList(product);
-           return;
-      }
-
+      );
       setGroceryList(newGroceryList);
       updateGroceryListBackend(user.email, newGroceryList);
     }
@@ -247,15 +275,13 @@ function ViewProducts() {
       }
   };
 
-
-  // Popup close function
+  // Popup close function to pass to Popup component
   const handleClosePopup = () => {
     setShowPopup(false);
   };
 
   // Function to handle data type checkbox changes
   const handleDataTypeChange = (event) => {
-    // ... (keep existing handleDataTypeChange logic)
     const value = event.target.value;
     const isChecked = event.target.checked;
     setDataType((prevDataTypes) => {
