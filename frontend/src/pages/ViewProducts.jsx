@@ -399,19 +399,19 @@ function ViewProducts() {
                       </p>
                       {inGroceryList ? (
                         <>
-                          <button onClick={() => decrementQuantity(product)}>
+                          <button onClick={(e) => { e.stopPropagation(); decrementQuantity(product); }}>
                             -
                           </button>
                           <span>{inGroceryList.quantity}</span>
-                          <button onClick={() => incrementQuantity(product)}>
+                          <button onClick={(e) => { e.stopPropagation(); incrementQuantity(product); }}>
                             +
                           </button>
-                          <button onClick={() => removeFromGroceryList(product)}>
+                          <button onClick={(e) => { e.stopPropagation(); removeFromGroceryList(product); }}>
                             Remove from Grocery List
                           </button>
                         </>
                       ) : (
-                        <button onClick={() => addToGroceryList(product)}>
+                        <button onClick={(e) => { e.stopPropagation(); addToGroceryList(product); }}>
                           Add to Grocery List
                         </button>
                       )}
