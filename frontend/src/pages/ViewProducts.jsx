@@ -389,6 +389,7 @@ function ViewProducts() {
                   onClick={() => viewProductDetails(product)} // Open product details popup on click
                   style={{ cursor: "pointer" }}>
                       <h3>{product.name}</h3>
+                      <p>Price at krogers: ${product.price}</p>
                       <p>Brand Owner: {product.brandOwner}</p>
                       <p>Brand Name: {product.brandName}</p>
                       <p>Ingredients: {product.ingredients}</p>
