@@ -7,6 +7,14 @@ from flask_cors import CORS
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+from base64 import b64encode
+from dotenv import load_dotenv
+import os
+import time
+
+# Load environment variables from a .env file
+load_dotenv()
+
 ##the authenticator produces output of form 
 ##    { "id": "1234", "given_name": "John", "name": "John Doe", "email": "john_doe@idp.example" }
 ## for now we can just store that whole thing, we will use the email as the indexing entity tho because theoretically we might want to support email password logins
@@ -92,6 +100,39 @@ app = Flask(__name__)
 CORS(app)
 
 data = datauser (ATLAS_URI, DB_NAME,COLLECTION_NAME)
+
+# For storing current token until it expires
+token_cache = {
+    "access_token": None,
+    "expires_at": 0
+}
+
+# Get Kroger API credentials from .env file
+client_id = os.getenv("KROGER_CLIENT_ID")
+client_secret = os.getenv("KROGER_CLIENT_SECRET")
+
+# Route for getting Kroger access token
+@app.route("/api/kroger-token", methods=["GET"])
+def get_kroger_token():
+    now = time.time()
+    if token_cache["access_token"] and now < token_cache["expires_at"]:
+        return jsonify({"token": token_cache["access_token"]})
+
+    # Token expired or doesn't exist, generate new
+    auth_header = b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    headers = {
+        "Authorization": f"Basic {auth_header}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = {"grant_type": "client_credentials", "scope": "product.compact"}
+    res = requests.post("https://api-ce.kroger.com/v1/connect/oauth2/token", headers=headers, data=data)
+    res_json = res.json()
+
+    token_cache["access_token"] = res_json["access_token"]
+    token_cache["expires_at"] = now + res_json["expires_in"]
+
+    return jsonify({"token": token_cache["access_token"]})
+
 
 # get takes ?email= and the other two methods take json for the user as teh user variable
 @app.route('/api/user', methods=['GET', 'POST', 'PUT'])
