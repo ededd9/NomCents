@@ -1,4 +1,8 @@
-const GroceryCart = ({ cartItems, incrementQuantity, decrementQuantity, removeItem }) => {
+// src/components/GroceryCart.jsx
+import React from 'react';
+
+// Accept toggleChecked prop
+const GroceryCart = ({ cartItems, incrementQuantity, decrementQuantity, removeItem, toggleChecked }) => {
 
   return (
       <div>
@@ -7,19 +11,74 @@ const GroceryCart = ({ cartItems, incrementQuantity, decrementQuantity, removeIt
         ) : (
           <ul>
             {cartItems.map((product) => (
-              <li key={product.fdcId} style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-                <p>{product.name}</p>
-                <button onClick={() => decrementQuantity(product.fdcId)}>-</button>
-                <span style={{ margin: "0 10px" }}>{product.quantity}</span>
-                <button onClick={() => incrementQuantity(product.fdcId)}>+</button>
-                <button onClick={() => removeItem(product.fdcId)} style={{ marginLeft: "10px", color: "blue" }}>Remove</button>
-              </li>
+              // Ensure product exists before rendering li
+              product && product.fdcId && (
+                <li key={product.fdcId} style={{ display: "flex", alignItems: "center", marginBottom: "10px", paddingBottom: '10px', borderBottom: '1px solid #eee' }}> {/* Added padding/border */}
+                    {/* --- Checkbox for check-off feature --- */}
+                    <input
+                        type="checkbox"
+                        checked={product.isChecked || false} // Handle potentially undefined isChecked
+                        onChange={() => toggleChecked(product.fdcId)}
+                        style={{ marginRight: "10px", cursor: 'pointer', flexShrink: 0 }} // Prevent checkbox from shrinking
+                    />
+                    {/* --- End Checkbox --- */}
+
+                    {/* --- Item Details (Name and Brand) --- */}
+                    <div style={{ // Use a div to allow block elements inside
+                        flexGrow: 1, // Allow text to take available space
+                        textDecoration: product.isChecked ? 'line-through' : 'none',
+                        opacity: product.isChecked ? 0.6 : 1,
+                        transition: 'opacity 0.3s ease, text-decoration 0.3s ease', // Smooth transition
+                        marginRight: '10px' // Add margin before quantity buttons
+                    }}>
+                        {/* Product Name/Description */}
+                        <span style={{ fontWeight: 'bold' }}>
+                            {product.name || product.description || `Item FDC ID: ${product.fdcId}`}
+                        </span>
+                        {/* Brand Name - Display if available */}
+                        {(product.brandOwner || product.brandName) && ( // Check if brand exists
+                             <span style={{ display: 'block', fontSize: '0.9em', color: 'white' }}> {/* Style for brand */}
+                                Brand: {product.brandOwner || product.brandName}
+                            </span>
+                        )}
+                    </div>
+                    {/* --- End Item Details --- */}
+
+                    {/* --- Quantity Buttons --- */}
+                    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}> {/* Wrap buttons to prevent shrinking */}
+                        <button
+                            onClick={() => decrementQuantity(product.fdcId)}
+                            disabled={product.quantity <= 1 || product.isChecked} // Disable if quantity is 1 or item is checked
+                            style={{ margin: "0 5px" }} // Adjusted margin
+                        >
+                            -
+                        </button>
+                        <span style={{ minWidth: '20px', textAlign: 'center' }}>{product.quantity}</span> {/* Ensure space for quantity */}
+                        <button
+                            onClick={() => incrementQuantity(product.fdcId)}
+                            disabled={product.isChecked} // Disable if item is checked
+                            style={{ margin: "0 5px" }} // Adjusted margin
+                        >
+                            +
+                        </button>
+                    </div>
+                    {/* --- End Quantity Buttons --- */}
+
+                    {/* --- Remove Button --- */}
+                    <button
+                        onClick={() => removeItem(product.fdcId)}
+                        style={{ marginLeft: "10px", color: "red", flexShrink: 0 }} // Prevent shrinking
+                    >
+                        Remove
+                    </button>
+                     {/* --- End Remove Button --- */}
+                </li>
+              )
             ))}
           </ul>
         )}
       </div>
     );
   };
-  
+
   export default GroceryCart;
-  
