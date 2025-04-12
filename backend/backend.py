@@ -404,7 +404,7 @@ def search_product():
     
     # format product data
     results = []
-    
+    get_kroger_token()
     # format product data
     headers = {
         "Accept": "application/json",
@@ -413,14 +413,15 @@ def search_product():
     
     for food in foods:
         res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
+
         price="n/a"
+        print(res.status_code)
         if(res.status_code==200):
-            price=(res.json()["data"]['items'][0]['price']['regular'])
+            price=f"${(res.json()["data"]['items'][0]['price']['regular'])}"
         # need these parameters for image querying
         name = food.get("description", "Unknown")
         brandOwner = food.get("brandOwner", "Unknown")
         brandName = food.get("brandName", "N/A")
-        
         # get image url using google search api
         # image_url = get_product_image(name, brand)
         
