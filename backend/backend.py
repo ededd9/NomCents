@@ -404,7 +404,18 @@ def search_product():
     
     # format product data
     results = []
+    
+    # format product data
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer { token_cache["access_token"]}"
+    }
+    
     for food in foods:
+        res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
+        price="n/a"
+        if(res.status_code==200):
+            price=(res.json()["data"]['items'][0]['price']['regular'])
         # need these parameters for image querying
         name = food.get("description", "Unknown")
         brandOwner = food.get("brandOwner", "Unknown")
@@ -418,6 +429,7 @@ def search_product():
             # Add barcode for matching prices to products
             "gtinUpc": food.get("gtinUpc", "N/A"),
             "name": name,
+            "price": price,
             "brandOwner": brandOwner,
             "brandName": brandName,
             "ingredients": food.get("ingredients", "Ingredients not available"),
