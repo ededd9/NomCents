@@ -1,3 +1,5 @@
+import datetime
+from datetime import datetime
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import json
@@ -477,6 +479,105 @@ def search_product():
             "total_pages": total_pages
         }
     })
+
+FOOD_LOG = 'food_intake'  # new mongoDB collection for food storage logs. note: initializes the first time it is inserted into
+
+@app.route("/api/log_food", methods=["GET", "POST", "DELETE"])
+def log_food():
+    # connect to 'food_log' collection in mongodb
+    food_collection = data.atlas_client.get_collection(FOOD_LOG)
+    
+    if request.method == 'POST':
+        # get food intake data from frontend
+        log_data = request.get_json()
+        # adding logs for debugging
+        # print("data from frontend:", log_data)
+        
+        # food logging fields
+        required_fields = ['email', 'fdcId', 'productName', 'servingSize', 'mealType', 'timestamp']
+            
+        # if returned dictionary in log_data does not contain all of the required fields
+        if not all(field in log_data for field in required_fields):
+            return jsonify({"message": "missing some required field :("}), 400
+        
+        # extract the date from timestamp
+        try:
+            # Replace 'Z' with '+00:00' for compatibility with datetime.fromisoformat
+            timestamp = log_data["timestamp"]
+            if timestamp.endswith("Z"):
+                timestamp = timestamp.replace("Z", "+00:00")
+            
+            # Parse the timestamp and extract the date
+            log_date = datetime.fromisoformat(timestamp).date().isoformat()
+            # print("log_date:", log_date)  # Debug log
+        except Exception as e:
+            print("problem parsing timestamp:", str(e))
+            return jsonify({"message": "invalid timestamp format"}), 400
+        
+        # set vars for JSON to insert into mongoDB appropriately
+        meal_type = log_data["mealType"].lower()
+        email = log_data["email"]
+        
+        # make sure a document exists for the user
+        food_collection.update_one(
+            {"email": email},
+            {"$setOnInsert": {"email": email, "logs": {}, "dailyTotals": {}}},
+            upsert=True
+        )
+        # print("Document ensured.")  # Debug log
+
+        # create nested structure for the date
+        food_collection.update_one(
+            {"email": email, f"logs.{log_date}": {"$exists": False}},
+            {"$set": {f"logs.{log_date}": {"meals": {}}}}
+        )
+        # print(f"Date structure ensured for {log_date}.")  # Debug log
+
+        # meal type array structure
+        food_collection.update_one(
+            {"email": email, f"logs.{log_date}.meals.{meal_type}": {"$exists": False}},
+            {"$set": {f"logs.{log_date}.meals.{meal_type}": []}}
+        )
+        # print(f"Meal type structure ensured for {meal_type}.")  # Debug log
+        
+        try:
+            # push log into the correct meal type array
+            food_collection.update_one(
+                {"email": email},
+                {"$push": {f"logs.{log_date}.meals.{meal_type}": log_data}}
+            )
+            # print("Log pushed into meal type array.")  # Debug log
+            
+            # get nutritional data from log_data 
+            nutrition = log_data.get("nutrition", {})
+            # print("Nutrition data:", nutrition)  # Debug log
+        
+            # update daily totals for calories if nutrition data exists
+            if nutrition:
+                inc_fields = {}
+                for key, value in nutrition.items():
+                    try:
+                        numeric_value = float(value)
+                        inc_fields[f"dailyTotals.{key}"] = numeric_value
+                    except Exception:
+                        # print(f"Skipping invalid nutrition value for {key}: {value}.")  # Debug log
+                        pass
+                if inc_fields:
+                    food_collection.update_one(
+                        {"email": email},
+                        {"$inc": inc_fields}
+                    )
+                    # print("Daily totals updated.")  # Debug log
+            
+            # Retrieve and print the updated document for debugging
+            updated_document = food_collection.find_one({"email": email})
+            print("Updated document:", updated_document, flush=True)        
+                    
+            return jsonify({"message": "food log added successfully :)"}), 200
+        except Exception as e:
+            print("POST error:", str(e))
+            # traceback.print_exc()  # Uncomment for detailed error traceback during debugging
+            return jsonify({"message": "error logging food"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

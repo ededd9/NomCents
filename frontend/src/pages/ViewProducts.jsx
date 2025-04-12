@@ -2,6 +2,7 @@
 import { useState, useContext, useEffect } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import Popup from "../components/PopUp";
+import FoodLogModal from "../components/FoodLogModal";
 import "./ViewProducts.css";
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
@@ -31,6 +32,9 @@ function ViewProducts() {
   // Stuff for product details popup
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductDetails, setShowProductDetails] = useState(false);
+
+  // Stuff for food log modal
+  const [showLogModal, setShowLogModal] = useState(false);
 
   // Fetch lists when user logs in
   useEffect(() => {
@@ -281,6 +285,49 @@ function ViewProducts() {
       }
   };
 
+  const openLogModal = (product) => {
+    console.log("Log Food button clicked for product:", product);
+    setSelectedProduct(product);
+    setShowLogModal(true);
+  };
+  
+  const closeLogModal = () => {
+    setShowLogModal(false);
+  };
+  
+  const handleLogSubmit = async (logData) => {
+    if (isLoggedIn && user){
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/log_food`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email, // need to ensure that this is being defined
+          fdcId: logData.fdcId,
+          productName: logData.productName, // updated to match modal properties
+          servingSize: logData.servingSize,
+          mealType: logData.mealType,
+          timestamp: logData.timestamp, // might change to just the date later
+        }),
+      });
+  
+      const result = await response.json();
+      alert(result.message || "Log added! :)");
+      setShowLogModal(false);
+    } catch (err) {
+      console.error("Error logging food:", err);
+      alert("Error logging food.");
+      // console.log("User:", user); // for debugging
+    }
+
+    //console.log("sending log data:", logData);
+    // if someone is not logged in
+    } else if (!isLoggedIn || !user) {
+      alert("must be logged in to log food");
+      return;
+    }
+  };
+
   // Popup close function to pass to Popup component
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -430,6 +477,11 @@ function ViewProducts() {
                           Add to Favorites
                         </button>
                       )}
+                      {isLoggedIn && (
+                      <button onClick={(e) => {e.stopPropagation(); openLogModal(product)}}>
+                        Log Food
+                      </button>
+                      )}
                     </div>
                   </div>
               );
@@ -494,9 +546,14 @@ function ViewProducts() {
           showLoginButton={showLoginButton}
         />
       )}
-      <button onClick={loadMoreProducts} disabled={isLoading || currentPage >= totalPages}>
-        {isLoading ? "Loading..." : "Load More"}
-      </button>
+
+      {showLogModal && selectedProduct && (
+        <FoodLogModal
+          product={selectedProduct}
+          onClose={closeLogModal}
+          onSubmit={handleLogSubmit}
+        />
+      )}
     </div>
   );
 }
