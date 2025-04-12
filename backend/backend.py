@@ -302,6 +302,7 @@ USDA_API_KEY = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN"
 
 @app.route('/api/search', methods=['GET'])
 def search_product():
+    get_kroger_token()
     print("Making it into search_product() function...", flush=True)
     """
     USDA food API query params for reference:
@@ -403,8 +404,16 @@ def search_product():
         return jsonify({"error": "no products found :("}), 404
     
     # format product data
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer { token_cache["access_token"]}"
+    }
     results = []
     for food in foods:
+        res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
+        price="n/a"
+        if(res.status_code==200):
+            price=(res.json()["data"]['items'][0]['price']['regular'])
         # need these parameters for image querying
         name = food.get("description", "Unknown")
         brandOwner = food.get("brandOwner", "Unknown")
@@ -418,6 +427,7 @@ def search_product():
             # Add barcode for matching prices to products
             "gtinUpc": food.get("gtinUpc", "N/A"),
             "name": name,
+            "price": price,
             "brandOwner": brandOwner,
             "brandName": brandName,
             "ingredients": food.get("ingredients", "Ingredients not available"),
@@ -581,3 +591,5 @@ def log_food():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
