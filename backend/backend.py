@@ -339,7 +339,9 @@ def search_product():
     query = request.args.get("product")
     page = request.args.get("page", default=1, type=int)
     page_size = request.args.get("pageSize", default=50, type=int)
+    usda_page = request.args.get("usda_page", default=1, type=int) # Keep track of current page to query starting from
     # Adding filtering query params with default values (if applicable)
+    show_only_priced = request.args.get("showOnlyPriced", default="false").lower() == "true"
     data_type = request.args.getlist(
         "dataType"
     )  # Retrieves all values for 'dataType' as a list
@@ -375,103 +377,125 @@ def search_product():
         return jsonify({"error": "did not enter search query :("}), 400
  
     # make USDA API request WITH PAGING
-    response = requests.get(USDA_API_URL, params=params)
-    print("USDA API Request URL:", response.url, flush=True)
- 
-    # error checking for response var
-    if response.status_code != 200:
-        # couldn't get data from OFF
-        return jsonify({"error": "could not retrieve data from USDA food data central API"}), 500
- 
-    # grab response info (given in a json format)
-    response_data = response.json()
-    # print(response_data)
- 
-    # error checking for response_data
-    if not response_data:
-        return jsonify({"error": "empty response from API :("}), 500
- 
-    # list the results on the page
-    # products - list of products related to search query
-    # total_results - keeps count of total query results
-    # results - stores processed products
-    # product.get(key, default_value) - if key exists, return its value. else set to default value
- 
-    foods = response_data.get("foods", [])
-    total_results = response_data.get("totalHits", 0)
- 
-    # if no products found
-    if not foods:
-        return jsonify({"error": "no products found :("}), 404
- 
-    # format product data
-    headers = {
-         "Accept": "application/json",
-         "Authorization": f"Bearer { token_cache["access_token"]}"
-     }
     results = []
-    for food in foods:
-        res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
-        price="n/a"
-        print("Res")
-        if(res.status_code==200):
-            price=(res.json()["data"]['items'][0]['price']['regular'])
-            print("Price:", price, flush=True)
+    total_results = 0
+    total_pages = 1
+    current_usda_page = usda_page # Start querying from page passed in
+    # Fetch results until we have enough for the current frontend page or reach end of USDA API pgs
+    while len(results) < page_size and current_usda_page <= total_pages:
+        params["pageNumber"] = current_usda_page
+        response = requests.get(USDA_API_URL, params=params)
+        print("USDA API Request URL:", response.url, flush=True)
     
-        # need these parameters for image querying
-        name = food.get("description", "Unknown")
-        brandOwner = food.get("brandOwner", "Unknown")
-        brandName = food.get("brandName", "N/A")
- 
-        # get image url using google search api
-        # image_url = get_product_image(name, brand)
- 
-        food_info = {
-            "fdcId": food.get("fdcId"),
-            # Add barcode for matching prices to products
-            "gtinUpc": food.get("gtinUpc", "N/A"),
-            "name": name,
-            "price": price,
-            "brandOwner": brandOwner,
-            "brandName": brandName,
-            "ingredients": food.get("ingredients", "Ingredients not available"),
-            "nutrition": {
-                "calories": None,
-                "protein": None,
-                "fat": None,
-                "carbohydrates": None,
-                "sugars": None,
-                "vitamins": {}
-            }
+        # error checking for response var
+        if response.status_code != 200:
+            # couldn't get data from OFF
+            return jsonify({"error": "could not retrieve data from USDA food data central API"}), 500
+    
+        # grab response info (given in a json format)
+        response_data = response.json()
+        # print(response_data)
+    
+        # error checking for response_data
+        if not response_data:
+            return jsonify({"error": "empty response from API :("}), 500
+    
+        # list the results on the page
+        # products - list of products related to search query
+        # total_results - keeps count of total query results
+        # results - stores processed products
+        # product.get(key, default_value) - if key exists, return its value. else set to default value
+    
+        foods = response_data.get("foods", [])
+        total_results = response_data.get("totalHits", 0)
+        total_pages = (total_results + params["pageSize"] - 1) // params["pageSize"]
+    
+        # if no products found
+        if not foods:
+            break
+    
+        # format product data
+        headers = {
+            "Accept": "application/json",
+            "Authorization": f"Bearer { token_cache["access_token"]}"
         }
         
-        if "foodNutrients" in food:
-            
-            # get nutrition info about the products from the search query
-            for nutrient in food["foodNutrients"]:
-                nutrient_name = nutrient.get("nutrientName", "").lower()
-                nutrient_value = nutrient.get("value", "N/A")
-                
-                if "energy" in nutrient_name:
-                    food_info["nutrition"]["calories"] = nutrient_value
-                elif "protein" in nutrient_name:
-                    food_info["nutrition"]["protein"] = nutrient_value
-                elif "total lipid" in nutrient_name or "fat" in nutrient_name:
-                    food_info["nutrition"]["fat"] = nutrient_value
-                elif "carbohydrate" in nutrient_name:
-                    food_info["nutrition"]["carbohydrates"] = nutrient_value
-                elif "sugars" in nutrient_name:
-                    food_info["nutrition"]["sugars"] = nutrient_value
-                elif "vitamin" in nutrient_name:
-                    vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
-                    food_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
-    
+        for food in foods:
+            res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
+            price="n/a"
+            print("Response status code:", res.status_code, flush=True)
+            if res.status_code == 200:
+                try:
+                    kroger_data = res.json()
+                    if "data" in kroger_data and "items" in kroger_data["data"] and len(kroger_data["data"]["items"]) > 0:
+                        price = kroger_data["data"]["items"][0].get("price", {}).get("regular", "n/a")
+                        print("Price:", price, flush=True)
+                except (KeyError, IndexError, TypeError, ValueError) as e:
+                    print(f"Error parsing Kroger API response: {e}", flush=True)
+
+            # If show_only_priced is true, skip products with no price
+            if show_only_priced and price == "n/a":
+                continue
         
-        # add each product to results list
-        results.append(food_info)
+            # need these parameters for image querying
+            name = food.get("description", "Unknown")
+            brandOwner = food.get("brandOwner", "Unknown")
+            brandName = food.get("brandName", "N/A")
+    
+            # get image url using google search api
+            # image_url = get_product_image(name, brand)
+    
+            food_info = {
+                "fdcId": food.get("fdcId"),
+                # Add barcode for matching prices to products
+                "gtinUpc": food.get("gtinUpc", "N/A"),
+                "name": name,
+                "price": price,
+                "brandOwner": brandOwner,
+                "brandName": brandName,
+                "ingredients": food.get("ingredients", "Ingredients not available"),
+                "nutrition": {
+                    "calories": None,
+                    "protein": None,
+                    "fat": None,
+                    "carbohydrates": None,
+                    "sugars": None,
+                    "vitamins": {}
+                }
+            }
+            
+            if "foodNutrients" in food:
+                
+                # get nutrition info about the products from the search query
+                for nutrient in food["foodNutrients"]:
+                    nutrient_name = nutrient.get("nutrientName", "").lower()
+                    nutrient_value = nutrient.get("value", "N/A")
+                    
+                    if "energy" in nutrient_name:
+                        food_info["nutrition"]["calories"] = nutrient_value
+                    elif "protein" in nutrient_name:
+                        food_info["nutrition"]["protein"] = nutrient_value
+                    elif "total lipid" in nutrient_name or "fat" in nutrient_name:
+                        food_info["nutrition"]["fat"] = nutrient_value
+                    elif "carbohydrate" in nutrient_name:
+                        food_info["nutrition"]["carbohydrates"] = nutrient_value
+                    elif "sugars" in nutrient_name:
+                        food_info["nutrition"]["sugars"] = nutrient_value
+                    elif "vitamin" in nutrient_name:
+                        vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
+                        food_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
+        
+            
+            # add each product to results list
+            results.append(food_info)
+            
+            if len(results) >= page_size:
+                break
+            
+        current_usda_page += 1 # Move to the next page of USDA API results
         
     # based on how many results there are, how many pages are needed to display all data?
-    total_pages = math.ceil(total_results / page_size)
+    # total_pages = math.ceil(total_results / page_size)
     
     # return all gathered info in form of a json file
     """notes for frontend:
@@ -485,12 +509,13 @@ def search_product():
         # request: /api/search?product=<search_query>&page=2&page_size=50
     """ 
     return jsonify({
-        "results": results,
+        "results": results[:page_size],  # limit results to page size
         "paging_info": {
             "current_page": page,
             "page_size": page_size,
             "total_results": total_results,
-            "total_pages": total_pages
+            "total_pages": total_pages,
+            "next_usda_page": current_usda_page if current_usda_page <= total_pages else None
         }
     })
 
