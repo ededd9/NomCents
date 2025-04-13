@@ -133,6 +133,7 @@ def get_kroger_token():
     token_cache["access_token"] = res_json["access_token"]
     token_cache["expires_at"] = now + res_json["expires_in"]
 
+    print("Token: ", token_cache["access_token"], flush=True)
     return jsonify({"token": token_cache["access_token"]})
 
 
@@ -302,35 +303,36 @@ USDA_API_KEY = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN"
 
 @app.route('/api/search', methods=['GET'])
 def search_product():
+    get_kroger_token()
     print("Making it into search_product() function...", flush=True)
     """
     USDA food API query params for reference:
-
+ 
     query <string>
     (Required) One or more search terms. The string may include search operators (ex. "green pepper" in quotes to search for the exact phrase, not just the individual words "green" and "pepper")
-
+ 
     dataType <string>
     Optional. Filter on a specific data type; specify one or more values in an array.
     Possible values: "Branded", "Foundation", "Survey (FNDDS)", "SR Legacy", "Experimental", "Other" (case insensitive). If not specified, all data types are included in the search.
-
+ 
     pageSize <integer>
     Optional. Maximum number of results to return for the current page. Default is 50.
-
+ 
     pageNumber <integer>
     Optional. Page number to retrieve. The offset into the overall result set is expressed as (pageNumber * pageSize)
-
+ 
     sortBy <string>
     Optional. Specify one of the possible values to sort by that field. Note, dataType.keyword will be dataType and lowercaseDescription.keyword will be description in future releases.
     Possible values: "lowercaseDescription.keyword", "fdcId", "dataType.keyword", "brandOwner.keyword", "modifiedDate", "publishedDate". If not specified, the default sort order is by "lowercaseDescription.keyword" in ascending order.
-
+ 
     sortOrder <string>
     Optional. The sort direction for the results. Only applicable if sortBy is specified.
     Possible values: "asc" (ascending) or "desc" (descending). Default is "asc".
-
+ 
     brandOwner <string>
     Optional. Filter results based on the brand owner of the food. Only applies to Branded Foods.
     """
-
+ 
     # 'product' will be variable name for the query parameter in the website URL
     # default to page 1
     # default to 50 items per page
@@ -344,7 +346,7 @@ def search_product():
     sort_by = request.args.get("sortBy", type=str)
     sort_order = request.args.get("sortOrder", type=str)
     brand_owner = request.args.get("brandOwner", default=None, type=str)
-
+ 
     params = {
         "query": query,
         "pageSize": page_size,
@@ -352,79 +354,78 @@ def search_product():
         "sortOrder": sort_order,
         "api_key": USDA_API_KEY,
     }
-
+ 
     if sort_by:
         params["sortBy"] = sort_by
-
+ 
     # Only add dataType to params if it's not empty
     if data_type and all(item != "" for item in data_type):
         params["dataType"] = data_type
-
+ 
     # Only add brandOwner to params if it's not an empty string
     if brand_owner != "" and brand_owner is not None:
         params["brandOwner"] = brand_owner
-
+ 
     print(
         "Search parameters:", params, flush=True
     )  # Debug print to check the parameters being sent to the API
-
+ 
     # error checking, 400 = bad request
     if not query:
         return jsonify({"error": "did not enter search query :("}), 400
-
+ 
     # make USDA API request WITH PAGING
     response = requests.get(USDA_API_URL, params=params)
     print("USDA API Request URL:", response.url, flush=True)
-
+ 
     # error checking for response var
     if response.status_code != 200:
         # couldn't get data from OFF
         return jsonify({"error": "could not retrieve data from USDA food data central API"}), 500
-    
+ 
     # grab response info (given in a json format)
     response_data = response.json()
     # print(response_data)
-    
+ 
     # error checking for response_data
     if not response_data:
         return jsonify({"error": "empty response from API :("}), 500
-    
+ 
     # list the results on the page
     # products - list of products related to search query
     # total_results - keeps count of total query results
     # results - stores processed products
     # product.get(key, default_value) - if key exists, return its value. else set to default value
-    
+ 
     foods = response_data.get("foods", [])
     total_results = response_data.get("totalHits", 0)
-    
+ 
     # if no products found
     if not foods:
         return jsonify({"error": "no products found :("}), 404
-    
-    # format product data
-    results = []
-    get_kroger_token()
+ 
     # format product data
     headers = {
-        "Accept": "application/json",
-        "Authorization": f"Bearer { token_cache["access_token"]}"
-    }
-    
+         "Accept": "application/json",
+         "Authorization": f"Bearer { token_cache["access_token"]}"
+     }
+    results = []
     for food in foods:
         res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
-
         price="n/a"
-        print(res.status_code)
+        print("Res")
         if(res.status_code==200):
-            price=f"${(res.json()["data"]['items'][0]['price']['regular'])}"
+            price=(res.json()["data"]['items'][0]['price']['regular'])
+            print("Price:", price, flush=True)
+    
         # need these parameters for image querying
         name = food.get("description", "Unknown")
         brandOwner = food.get("brandOwner", "Unknown")
         brandName = food.get("brandName", "N/A")
+ 
         # get image url using google search api
         # image_url = get_product_image(name, brand)
-        
+ 
         food_info = {
             "fdcId": food.get("fdcId"),
             # Add barcode for matching prices to products
