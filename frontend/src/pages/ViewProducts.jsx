@@ -14,6 +14,7 @@ function ViewProducts() {
   const [groceryList, setGroceryList] = useState([]);
   const [favoritesList, setFavoritesList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [usdaPage, setUsdaPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -28,6 +29,9 @@ function ViewProducts() {
   const [sortBy, setSortBy] = useState("dataType.keyword");
   const [sortOrder, setSortOrder] = useState("asc");
   const [brandOwner, setBrandOwner] = useState("");
+
+  // Stuff for showing only products with prices
+  const [showOnlyPriced, setShowOnlyPriced] = useState(false);
 
   // Stuff for product details popup
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -132,7 +136,7 @@ function ViewProducts() {
 
       const response = await fetch(
         // Include all query params that aren't null or empty
-        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}`
+        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}&usdaPage=${usdaPage}&showOnlyPriced=${showOnlyPriced}`
       );
 
       if (!response.ok) {
@@ -148,6 +152,7 @@ function ViewProducts() {
       }
 
       setTotalPages(data.paging_info.total_pages);
+      setUsdaPage(data.paging_info.next_usda_page);
       setIsLoading(false);
 
     } catch (error) {
@@ -416,6 +421,15 @@ function ViewProducts() {
           onChange={(e) => setBrandOwner(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && searchProducts(1)}
         />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={showOnlyPriced}
+            onChange={(e) => setShowOnlyPriced(e.target.checked)}
+          />
+          Show Priced Products Only
+        </label>
       </div>
 
       <div>
@@ -436,7 +450,7 @@ function ViewProducts() {
                   onClick={() => viewProductDetails(product)} // Open product details popup on click
                   style={{ cursor: "pointer" }}>
                       <h3>{product.name}</h3>
-                      <p>Price at krogers: {product.price}</p>
+                      <p>Price at Krogers: {product.price != "n/a" ? `$${product.price}` : product.price}</p>
                       <p>Brand Owner: {product.brandOwner}</p>
                       <p>Brand Name: {product.brandName}</p>
                       <p>Ingredients: {product.ingredients}</p>
