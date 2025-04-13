@@ -345,6 +345,7 @@ def get_locations():
         
     return jsonify(formatted_locations)
 
+
 @app.route('/api/search', methods=['GET'])
 def search_product():
     get_kroger_token()
@@ -564,6 +565,48 @@ def search_product():
             "next_usda_page": current_usda_page if current_usda_page <= total_pages else None
         }
     })
+
+
+# Endpoint for price comparison for the 10 (max) stores near the user's zipcode -- pass store location IDs as an array in the request body
+@app.route('/api/price_comparison', methods=['GET'])
+def price_comparison():
+    print("Price comparison endpoint hit", flush=True)
+    print("Query parameters:", request.args, flush=True)
+    get_kroger_token()
+    location_ids = request.args.getlist("locationIds")
+    print("Location IDs:", location_ids, flush=True)
+    gtinUpc = request.args.get("gtinUpc", None)
+    print("GTIN/UPC:", gtinUpc, flush=True)
+    
+    if not location_ids or not gtinUpc:
+        return jsonify({"error": "locationIds and gtinUpc are required"}), 400
+    
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer { token_cache['access_token']}"
+    }
+    
+    results = []
+    
+    for location_id in location_ids:
+        response = requests.get(f"https://api-ce.kroger.com/v1/products/00{gtinUpc[:-1]}?filter.locationId={location_id}", headers=headers)
+        
+        print("Kroger API Request URL:", response.url, flush=True)
+        
+        if response.status_code == 200:
+            try:
+                kroger_data = response.json()
+                if "data" in kroger_data and "items" in kroger_data["data"] and len(kroger_data["data"]["items"]) > 0:
+                    price = kroger_data["data"]["items"][0].get("price", {}).get("regular", "n/a")
+                    results.append({
+                        "locationId": location_id,
+                        "price": price
+                    })
+            except (KeyError, IndexError, TypeError, ValueError) as e:
+                print(f"Error parsing Kroger API response: {e}", flush=True)
+    
+    return jsonify(results)
+
 
 FOOD_LOG = 'food_intake'  # new mongoDB collection for food storage logs. note: initializes the first time it is inserted into
 

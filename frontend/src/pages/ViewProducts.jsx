@@ -47,6 +47,9 @@ function ViewProducts() {
   const [storeOptions, setStoreOptions] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
 
+  const [priceComparisonData, setPriceComparisonData] = useState([]);
+  const [showPriceComparison, setShowPriceComparison] = useState(false);
+
   // Fetch lists when user logs in
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -68,6 +71,10 @@ function ViewProducts() {
     }
   }, [zipCode]);
 
+  useEffect(() => {
+    // Reset showPriceComparison when selectedProduct changes
+    setShowPriceComparison(false);
+  }, [selectedProduct]);
 
   // Function to fetch user data (grocery list and favorites) from backend
   const fetchUserData = async (email) => {
@@ -383,6 +390,35 @@ function ViewProducts() {
     }
   };
 
+  const fetchPriceComparison = async () => {
+    try {
+      // If already showing, toggle off
+      if (showPriceComparison) {
+        setShowPriceComparison(false);
+        return;
+      }
+  
+      const locationIds = storeOptions.map((store) => store.value); // Get nearby store IDs
+      const response = await fetch(
+        `${BACKEND_API_URL}/price_comparison?gtinUpc=${selectedProduct.gtinUpc}&${locationIds
+          .map((id) => `locationIds=${id}`)
+          .join("&")}`
+      );
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      setPriceComparisonData(data); // Save the prices in state
+      setShowPriceComparison(true); // Show the price comparison table
+    } catch (err) {
+      console.error("Error fetching price comparison:", err);
+      setShowPopup(true);
+      setPopupMessage("Failed to fetch price comparison.");
+    }
+  };
+
   // Popup close function to pass to Popup component
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -624,6 +660,56 @@ function ViewProducts() {
                   )
                 )}
               </ul>
+              {showPriceComparison && (
+                <div style={{ marginTop: "20px" }}>
+                  <h2>Price Comparison</h2>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Store Location</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {priceComparisonData.map((price) => {
+                        const isSelectedStore = price.locationId === selectedStore?.value; // Check if this is the selected store
+                        return (
+                          <tr key={price.locationId}>
+                            <td>
+                              {
+                                storeOptions.find((store) => store.value === price.locationId)
+                                  ?.label || "Unknown Store"
+                              }
+                            </td>
+                            <td>
+                              {price.price !== "n/a" ? `$${price.price}` : "Not Available"}
+                              {isSelectedStore && (
+                                <span
+                                  style={{
+                                    color: "blue",
+                                    fontWeight: "bold",
+                                    marginLeft: "5px",
+                                  }}
+                                >
+                                  {" ← currently selected store"}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {selectedStore && (
+                <button
+                  onClick={fetchPriceComparison}
+                  style={{ marginTop: "10px" }}
+                >
+                  {showPriceComparison ? "Hide Price Comparison" : "Compare Prices with Other Nearby Stores"}
+                </button>
+              )}
               <button onClick={closeProductDetails}>Close</button>
             </div>
           }
