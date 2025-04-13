@@ -4,6 +4,7 @@ import { LoginContext } from "../contexts/LoginContext";
 import Popup from "../components/PopUp";
 import FoodLogModal from "../components/FoodLogModal";
 import "./ViewProducts.css";
+import Select from 'react-select';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -40,6 +41,12 @@ function ViewProducts() {
   // Stuff for food log modal
   const [showLogModal, setShowLogModal] = useState(false);
 
+  // Stuff for store selection
+  const [displayedZipCode, setDisplayedZipCode] = useState(""); // Tracks user input
+  const [zipCode, setZipCode] = useState(""); // Tracks validated zip code
+  const [storeOptions, setStoreOptions] = useState([]);
+  const [selectedStore, setSelectedStore] = useState(null);
+
   // Fetch lists when user logs in
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -50,6 +57,16 @@ function ViewProducts() {
       setFavoritesList([]); 
     }
   }, [isLoggedIn, user]);
+
+
+  // Each time the zipcode field entered by user changes, fetch the updated stores for the searchable dropdown
+  useEffect(() => {
+    if (zipCode) {
+      fetchStores();
+    } else {
+      setStoreOptions([]);
+    }
+  }, [zipCode]);
 
 
   // Function to fetch user data (grocery list and favorites) from backend
@@ -120,6 +137,39 @@ function ViewProducts() {
   };
 
 
+  // Function to get and set locations list based on zipcode entered by user
+  const fetchStores = async () => {
+    
+    try {
+    
+      const res = await fetch(`${BACKEND_API_URL}/locations?zipcode=${zipCode}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!res.ok) {
+        throw new Error(`Failed to fetch stores: ${res.statusText}`);
+      }
+  
+      const data = await res.json();
+  
+      // Map over the returned list of locations
+      const formatted = data.map((location) => ({
+        label: `${location.address} (${location.city}, ${location.state})`,
+        value: location.locationId,
+      }));
+  
+      setStoreOptions(formatted);
+
+    } catch (err) {
+      console.error("Failed to fetch stores:", err);
+      setStoreOptions([]); // Clear store options on error
+    }
+  };
+
+
   // Function to search for products
   const searchProducts = async (page = 1) => {
  
@@ -136,7 +186,7 @@ function ViewProducts() {
 
       const response = await fetch(
         // Include all query params that aren't null or empty
-        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}&usdaPage=${usdaPage}&showOnlyPriced=${showOnlyPriced}`
+        `${BACKEND_API_URL}/search?product=${product}&page=${page}&pageSize=10&dataType=${dataType}&sortBy=${sortBy}&sortOrder=${sortOrder}&brandOwner=${brandOwner}&usdaPage=${usdaPage}&showOnlyPriced=${showOnlyPriced}&locationId=${selectedStore?.value || ""}`
       );
 
       if (!response.ok) {
@@ -430,6 +480,34 @@ function ViewProducts() {
           />
           Show Priced Products Only
         </label>
+
+        <label htmlFor="zipCode">Enter Zip Code:</label>
+        <input
+          type="text"
+          id="zipCode"
+          placeholder="Enter your zip code..."
+          value={displayedZipCode} // Bind to displayedZipCode
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value)) { // Allow only numeric input
+              setDisplayedZipCode(value); // Update displayedZipCode as the user types
+              if (value.length === 5) {
+                setZipCode(value); // Update zipCode only when input is exactly 5 digits
+              }
+            }
+          }}
+          maxLength={5} // Limit input to 5 characters
+        />
+
+        <label htmlFor="storeSelect">Select Store:</label>
+        <Select
+          id="storeSelect"
+          options={storeOptions}
+          value={selectedStore}
+          onChange={(selectedOption) => setSelectedStore(selectedOption)}
+          placeholder="Select a store..."
+          isSearchable
+        />
       </div>
 
       <div>
