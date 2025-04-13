@@ -301,6 +301,50 @@ USDA_API_KEY = "ErqPLe9V080QM2baXIjUt40zxkon8al2JBfwqKJN"
             return data["items"][0]["link"] # 0 = first image url
     return None # no image found"""
 
+# Route for getting locations near zipcode user entered
+@app.route('/api/locations', methods=['GET'])
+def get_locations():
+    get_kroger_token()
+    zipcode = request.args.get("zipcode")
+    
+    if not zipcode:
+        return jsonify({"error": "zipcode is required"}), 400
+    
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer { token_cache['access_token']}"
+    }
+    
+    response = requests.get(f"https://api-ce.kroger.com/v1/locations?filter.zipCode.near={zipcode}&filter.limit=10", headers=headers)
+    
+    print("Kroger API Request URL:", response.url, flush=True)
+    
+    if response.status_code != 200:
+        return jsonify({"error": "could not retrieve data from Kroger API"}), 500
+    
+    locations_data = response.json()
+    
+    if not locations_data or 'data' not in locations_data:
+        return jsonify({"error": "no locations found"}), 404
+    
+    locations = locations_data['data']
+    
+    # Format the response to include only necessary fields
+    formatted_locations = []
+    
+    for location in locations:
+        formatted_location = {
+            "locationId": location.get("locationId"),
+            "address": location.get("address", {}).get("addressLine1", "N/A"),
+            "city": location.get("address", {}).get("city", "N/A"),
+            "state": location.get("address", {}).get("state", "N/A"),
+            "zipCode": location.get("address", {}).get("zipCode", "N/A"),
+            "phoneNumber": location.get("phoneNumber", "N/A")
+        }
+        formatted_locations.append(formatted_location)
+        
+    return jsonify(formatted_locations)
+
 @app.route('/api/search', methods=['GET'])
 def search_product():
     get_kroger_token()
@@ -420,8 +464,10 @@ def search_product():
             "Authorization": f"Bearer { token_cache["access_token"]}"
         }
         
+        location_id = request.args.get("locationId", default="01400376")
+        
         for food in foods:
-            res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId=01400376", headers=headers)
+            res = requests.get(f"https://api-ce.kroger.com/v1/products/00{food.get("gtinUpc")[:-1]}?filter.locationId={location_id}", headers=headers)
             price="n/a"
             print("Response status code:", res.status_code, flush=True)
             if res.status_code == 200:
