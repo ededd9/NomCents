@@ -46,3 +46,110 @@
 .product-card button:hover {
   background: #0056b3;
 }
+
+.search-filters {
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.search-filters .search-bar {
+  display: flex;
+  width: 100%; /* Full width for the search bar */
+  margin-bottom: 15px; /* Add spacing below the search bar */
+}
+
+.search-filters .filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Add spacing between filter inputs */
+  margin-bottom: 15px; /* Add spacing below the filter group */
+}
+
+.search-filters input[type="text"],
+.search-filters select,
+.search-filters .react-select__control {
+  margin-right: 15px; /* Add spacing between inputs */
+}
+
+.search-filters .react-select__control {
+  width: 400px; /* Adjust dropdown width */
+  min-height: 20px;
+  height: 21.33px; /* Match height with other inputs */
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.search-filters .react-select__menu {
+  width: 400px; /* Match dropdown width with control */
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+/* Dropdown container */
+.react-select__control {
+  width: 400px;
+  min-height: 20px;
+  height: 21.33px; /* Match height with other inputs */
+  padding: 0 8px;
+  box-sizing: border-box;
+  font-size: 13px; /* Match font size with other inputs */
+}
+
+/* Dropdown menu */
+.react-select__menu {
+  width: 400px;
+  z-index: 1000;
+  font-size: 13px; /* Match font size with other inputs */
+}
+
+/* Dropdown options */
+.react-select__option {
+  color: #333 !important; /* Default text color */
+  background-color: #fff; /* Default background color */
+  padding: 8px;
+}
+
+/* Hovered option */
+.react-select__option--is-focused {
+  background-color: #007bff; /* Darker blue for hover */
+  color: #fff; /* White text for better contrast */
+}
+
+/* Selected option */
+.react-select__option--is-selected {
+  background-color: #0056b3; /* Even darker blue for selected */
+  color: #fff;
+}
+
+/* Dropdown indicator (arrow) */
+.react-select__indicators {
+  height: 21.33px; /* Match the height of the control */
+  display: flex;
+  align-items: center; /* Center the indicator vertically */
+  padding: 0 4px; /* Reduce padding for a smaller indicator */
+}
+
+/* Value container (inside the dropdown) */
+.react-select__value-container {
+  padding: 0;
+}
+
+/* Input inside the dropdown */
+.react-select__input {
+  margin: 0;
+  padding: 0;
+}
+
+.search-filters label {
+  margin-right: 15px; /* Add spacing between labels */
+}
+
+.search-filters .zip-and-store {
+  display: flex; /* Align the inputs horizontally */
+  justify-content: center;
+  gap: 15px; /* Add spacing between the inputs */
+  margin-top: 15px; /* Add spacing above the row */
+}
+
+#brandOwner {
+  width: 190px; /* Increase the width slightly */
+}
