@@ -517,33 +517,37 @@ function ViewProducts() {
           Show Priced Products Only
         </label>
 
-        <label htmlFor="zipCode">Enter Zip Code:</label>
-        <input
-          type="text"
-          id="zipCode"
-          placeholder="Enter your zip code..."
-          value={displayedZipCode} // Bind to displayedZipCode
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*$/.test(value)) { // Allow only numeric input
-              setDisplayedZipCode(value); // Update displayedZipCode as the user types
-              if (value.length === 5) {
-                setZipCode(value); // Update zipCode only when input is exactly 5 digits
+        <div className="zip-and-store">
+          <label htmlFor="zipCode">Enter Zip Code:</label>
+          <input
+            type="text"
+            id="zipCode"
+            placeholder="Enter your zip code..."
+            value={displayedZipCode} // Bind to displayedZipCode
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) { // Allow only numeric input
+                setDisplayedZipCode(value); // Update displayedZipCode as the user types
+                if (value.length === 5) {
+                  setZipCode(value); // Update zipCode only when input is exactly 5 digits
+                }
               }
-            }
-          }}
-          maxLength={5} // Limit input to 5 characters
-        />
+            }}
+            maxLength={5} // Limit input to 5 characters
+          />
 
-        <label htmlFor="storeSelect">Select Store:</label>
-        <Select
-          id="storeSelect"
-          options={storeOptions}
-          value={selectedStore}
-          onChange={(selectedOption) => setSelectedStore(selectedOption)}
-          placeholder="Select a store..."
-          isSearchable
-        />
+          <label htmlFor="storeSelect">Select Store:</label>
+          <Select
+            id="storeSelect"
+            options={storeOptions}
+            value={selectedStore}
+            onChange={(selectedOption) => setSelectedStore(selectedOption)}
+            placeholder="Select a store..."
+            isSearchable
+            className="react-select"
+            classNamePrefix="react-select"
+          />
+        </div>
       </div>
 
       <div>
