@@ -8,6 +8,7 @@ import ViewProducts from "./pages/ViewProducts";
 import ViewProductDetails from "./pages/ViewProductDetails";
 import GroceryCartPage from "./pages/GroceryCartPage";
 import FavoritesPage from "./pages/FavoritesPage"; 
+import ProgressPage from './pages/ProgressPage';
 
 function App() {
   // Set up routes
@@ -40,6 +41,10 @@ function App() {
       path: "/favorites",
       element: <FavoritesPage />,
     },
+    {
+      path: "/progress",
+      element: <ProgressPage />, 
+    },
   ]);
 
   return (
@@ -50,6 +55,7 @@ function App() {
           <a href="/products">Products </a>
           <a href="/favorites"> Favorites </a> 
           <a href="/grocery-cart"> ViewCart </a>
+          <a href="/progress">Progress </a>
           <a href="/profile/:username">Profile </a> 
           <LoginContext.Consumer>
             {({ isLoggedIn, setIsLoggedIn }) =>
