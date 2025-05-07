@@ -139,7 +139,19 @@ def get_kroger_token():
     print("Token: ", token_cache["access_token"], flush=True)
     return jsonify({"token": token_cache["access_token"]})
 
+@app.route('/api/usercartvalue', methods=['GET'])
 
+def usercartvalue():
+    email=request.args['email']
+    usstring=('{"email":"'+ email+'"}')
+    user=data.userLookup(usstring)
+    sum=0
+    for i in user['groceryList']:
+        if 'price' in i.keys():
+            sum+=i['price']*i['quantity']
+
+    return jsonify({"cartValue": round(sum,2)})
+    
 # get takes ?email= and the other two methods take json for the user as teh user variable
 @app.route('/api/user', methods=['GET', 'POST', 'PUT'])
 def user():
@@ -150,11 +162,13 @@ def user():
         usstring=('{"email":"'+ email+'"}')
 
         user=data.userLookup(usstring)
+        
         if(not (user is None)):
             user['_id'] = str(user['_id'])
             return jsonify(user)
         else:
             abort(404)
+       
     elif request.method== 'POST':
         udat=request.get_json()
         if data.makeUser(udat):
