@@ -133,7 +133,8 @@ def get_kroger_token():
     data = {"grant_type": "client_credentials", "scope": "product.compact"}
     res = requests.post("https://api-ce.kroger.com/v1/connect/oauth2/token", headers=headers, data=data)
     res_json = res.json()
-
+    print("Status code:", res.status_code)
+    print("Response text:", res.text)
     token_cache["access_token"] = res_json["access_token"]
     token_cache["expires_at"] = now + res_json["expires_in"]
 
@@ -150,7 +151,7 @@ def usercartvalue():
     for i in user['groceryList']:
         if 'price' in i.keys():
             sum+=i['price']*i['quantity']
-
+    print("sum is ", sum)
     return jsonify({"cartValue": round(sum,2)})
     
 # get takes ?email= and the other two methods take json for the user as teh user variable
