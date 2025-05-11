@@ -26,7 +26,7 @@ load_dotenv()
 ATLAS_URI="mongodb+srv://pythhon:8x5pGda7EWdKGtV0@nomcents.5fhvz.mongodb.net/?retryWrites=true&w=majority&appName=nomcents"
 DB_NAME = 'users'
 COLLECTION_NAME = 'users_test'
-WEIGHT_LOG = 'weight_logs'
+#WEIGHT_LOG = 'weight_logs'
 kroger_cache = TTLCache(maxsize=10000, ttl=86400)  # Cache for 1 hour #test
 class AtlasClient ():
    def __init__ (self, altas_uri, dbname):
@@ -977,17 +977,23 @@ def log_food():
             # traceback.print_exc()  # Uncomment for detailed error traceback during debugging
             return jsonify({"message": "error logging food"}), 500
         
+# --- MODIFIED WEIGHT LOG ROUTES ---
+# These routes assume the global 'data' object (instance of datauser)
+# and the FOOD_LOG constant are defined as above
+
 @app.route('/api/user/weight_log', methods=['POST'])
-def add_weight_log_route(): # Renamed to avoid conflict
-    log_data_payload = request.get_json() # Renamed
-    email = log_data_payload.get('email')
-    weight_str = log_data_payload.get('weight')
-    timestamp = datetime.now()
+def add_weight_log_route(): 
+    log_data = request.get_json() # Using 'log_data' 
+    email = log_data.get('email')
+    weight_str = log_data.get('weight')
+    
+    # Use current date as YYYY-MM-DD for the log key
+    log_date_iso = datetime.now().date().isoformat()
 
     if not email or weight_str is None:
         return jsonify({"message": "Email and weight are required"}), 400
 
-    if not data.isUser(json.dumps({"email": email})): # Check if user exists
+    if not data.isUser(json.dumps({"email": email})): # data is global datauser instance
          return jsonify({"message": "User not found"}), 404
 
     try:
@@ -995,17 +1001,41 @@ def add_weight_log_route(): # Renamed to avoid conflict
         if weight_val <= 0:
              return jsonify({"message": "Invalid weight value"}), 400
 
-        log_entry = {"email": email, "weight": weight_val, "date": timestamp}
-        data.atlas_client.insWrapper(log_entry, WEIGHT_LOG) # AtlasClient directly
+        food_collection = data.atlas_client.get_collection(FOOD_LOG)
+        
+        # Ensure the user's document, the 'logs' object, and the specific date entry exist.
+        # Then set/update the weight for that day.
+        # Using $set on a nested field will create intermediate objects if they don't exist,
+        # but only if the parent document (the user's email doc) already exists.
+        
+        food_collection.update_one(
+            {"email": email},
+            {
+                "$setOnInsert": {"email": email, "logs": {}, "dailyTotals": {}}
+            },
+            upsert=True # Create the user document in FOOD_LOG if it doesn't exist
+        )
+
+        # Now, set the weight for the specific date.
+        # when we $set a field within it (like `logs.<date_str>.weight`).
+        food_collection.update_one(
+            {"email": email},
+            {"$set": {f"logs.{log_date_iso}.weight": weight_val}}
+        )
+
+        print(f"Updated/Inserted weight for {email} on {log_date_iso}: {weight_val}", flush=True)
         return jsonify({"message": "Weight logged successfully"}), 200
+
     except ValueError:
         return jsonify({"message": "Invalid weight format, must be a number"}), 400
     except Exception as e:
         print(f"Error in add_weight_log_route: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"message": "Internal server error logging weight"}), 500
 
 @app.route('/api/user/weight_history', methods=['GET'])
-def get_weight_history_route():
+def get_weight_history_route(): # Retaining original function name
     email = request.args.get('email')
     if not email:
         return jsonify({"message": "Email query parameter is required"}), 400
@@ -1014,68 +1044,103 @@ def get_weight_history_route():
          return jsonify({"message": "User not found"}), 404
 
     try:
-        # 1. Fetch unsorted data using your existing find method
-        unsorted_history_db = data.atlas_client.find(WEIGHT_LOG, {"email": email})
+        food_collection = data.atlas_client.get_collection(FOOD_LOG)
+        user_document = food_collection.find_one({"email": email}) 
 
-        if not unsorted_history_db:
+        if not user_document or "logs" not in user_document:
             return jsonify({"labels": [], "data": []}), 200
 
-        # 2. Sort the list of dictionaries in Python based on the 'date' key
-        try:
-            history_db = sorted(unsorted_history_db, key=lambda item: item['date'])
-        except KeyError:
-             # Handle cases where 'date' might be missing in some older malformed documents
-            print(f"Warning: A weight log entry for {email} is missing the 'date' field.")
-            # Filter out items without a 'date' field for sorting
-            history_db = sorted([item for item in unsorted_history_db if 'date' in item], key=lambda item: item['date'])
+        weight_entries = []
+        # Iterate through the dates (keys) in the user_document['logs'] object
+        for date_str, daily_data in user_document["logs"].items(): 
+            # Check if daily_data is a dictionary and contains a 'weight' key
+            if isinstance(daily_data, dict) and "weight" in daily_data and daily_data["weight"] is not None:
+                try:
+                    # Validate date string format before adding
+                    datetime.strptime(date_str, '%Y-%m-%d')
+                    weight_entries.append({"date": date_str, "weight": daily_data["weight"]})
+                except ValueError:
+                    # This handles cases where a key in 'logs' might not be a valid date string
+                    print(f"Warning: Invalid date format '{date_str}' found in logs for user {email}. Skipping.")
 
 
-        labels = [item['date'].strftime('%Y-%m-%d') for item in history_db if 'date' in item and hasattr(item['date'], 'strftime')]
-        weights = [item['weight'] for item in history_db if 'weight' in item]
+        if not weight_entries:
+            return jsonify({"labels": [], "data": []}), 200
 
+        # Sort entries by date string (lexicographical sort works for YYYY-MM-DD)
+        # For more robust date sorting, convert to datetime objects first
+        def get_date_for_sort(entry):
+            try:
+                return datetime.strptime(entry['date'], '%Y-%m-%d')
+            except ValueError:
+                # Should not happen if we validated above, but as a fallback
+                return datetime.min # Or handle error appropriately
+
+        sorted_weight_entries = sorted(weight_entries, key=get_date_for_sort)
+        
+        labels = [entry['date'] for entry in sorted_weight_entries]
+        weights = [entry['weight'] for entry in sorted_weight_entries]
 
         return jsonify({"labels": labels, "data": weights}), 200
     except Exception as e:
         print(f"Error in get_weight_history_route: {e}")
         import traceback
-        traceback.print_exc() # This will give detailed error in Flask console
+        traceback.print_exc()
         return jsonify({"message": "Internal server error fetching weight history"}), 500
     
-@app.route('/api/user/weight_log', methods=['DELETE']) # Changed route
-def delete_last_weight_log_entry_route():
-    email = request.args.get('email') # Example: DELETE /api/user/weight_log?email=user@example.com
-
+@app.route('/api/user/weight_log', methods=['DELETE'])
+def delete_last_weight_log_entry_route(): # Retaining original function name
+    email = request.args.get('email')
     if not email:
-        return jsonify({"message": "User email is required to delete the last weight entry"}), 400
+        return jsonify({"message": "User email is required"}), 400
+    
+    if not data.isUser(json.dumps({"email": email})):
+         return jsonify({"message": "User not found"}), 404
 
     try:
-        weight_collection = data.atlas_client.get_collection(WEIGHT_LOG)
-        
-        # PyMongo's sort takes a list of (key, direction) tuples. -1 for descending.
-        most_recent_entry = weight_collection.find_one(
+        food_collection = data.atlas_client.get_collection(FOOD_LOG)
+        user_document = food_collection.find_one({"email": email}) 
+
+        if not user_document or "logs" not in user_document:
+            return jsonify({"message": "No logs found for this user"}), 404
+
+        most_recent_date_with_weight = None
+        # Iterate through the logs to find the most recent date with a weight entry
+        for date_str, daily_data in user_document["logs"].items(): 
+            if isinstance(daily_data, dict) and "weight" in daily_data and daily_data["weight"] is not None:
+                try:
+                    # Validate date string before comparison
+                    current_log_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    if most_recent_date_with_weight is None:
+                        most_recent_date_with_weight = date_str
+                    else:
+                        # Compare with existing most_recent_date_with_weight
+                        if current_log_date > datetime.strptime(most_recent_date_with_weight, '%Y-%m-%d').date():
+                            most_recent_date_with_weight = date_str
+                except ValueError:
+                    print(f"Warning: Invalid date format '{date_str}' found in logs for user {email} during delete operation. Skipping.")
+
+        if not most_recent_date_with_weight:
+            return jsonify({"message": "No weight entries found to delete"}), 404
+
+        # Unset the weight field for that specific date
+        update_result = food_collection.update_one(
             {"email": email},
-            sort=[("date", -1)] # -1 for descending sort on 'date'
+            {"$unset": {f"logs.{most_recent_date_with_weight}.weight": ""}}
         )
 
-        if not most_recent_entry:
-            return jsonify({"message": "No weight log entries found for this user to delete"}), 404
-
-        # Get the ID of the most recent entry to delete it
-        log_id_to_delete = most_recent_entry['_id']
-        
-        delete_result = weight_collection.delete_one({"_id": log_id_to_delete})
-
-        if delete_result.deleted_count == 1:
-            return jsonify({"message": "Last weight log entry deleted successfully"}), 200
+        if update_result.modified_count == 1:
+            return jsonify({"message": f"Weight entry for {most_recent_date_with_weight} deleted successfully"}), 200
         else:
-            
-            return jsonify({"message": "Failed to delete last weight log entry (entry not found after initial check)"}), 404
+            # This case means the $unset operation didn't modify anything.
+            print(f"Debug DELETE: No modification for email {email}, date {most_recent_date_with_weight}. Update result: {update_result.raw_result}")
+            return jsonify({"message": "Failed to delete weight entry (it may have already been removed or path was incorrect)"}), 404 
             
     except Exception as e:
         print(f"Error in delete_last_weight_log_entry_route: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"message": "Internal server error deleting last weight entry"}), 500
+        return jsonify({"message": "Internal server error deleting weight entry"}), 500
     
 if __name__ == '__main__':
     app.run(debug=True)
