@@ -9,10 +9,12 @@ const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 const GroceryCartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const { isLoggedIn, user } = useContext(LoginContext);
+  const [cartValue, setCartValue] = useState(0);
 
   // Fetch grocery list when user logs in or changes
   useEffect(() => {
     if (isLoggedIn && user) {
+
       fetchGroceryList(user.email);
     } else {
         // Clear cart if user logs out
@@ -32,6 +34,7 @@ const GroceryCartPage = () => {
           ...item,
           isChecked: item.isChecked || false // Add default value if missing
         }));
+        await cartTotal(email)
         setCartItems(itemsWithChecked);
       } else {
           console.error("Failed to fetch grocery list:", response.statusText);
@@ -120,8 +123,23 @@ const GroceryCartPage = () => {
     updateGroceryList(newGroceryList); // Persist the change to the backend
   };
   // --- End of NEW Function ---
+  const cartTotal = async (email) => {
 
-  return (
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/usercartvalue?email=${email}`);
+      if (response.ok) {
+        const data = await response.json();
+     
+        setCartValue(data.cartValue);
+      } else {
+          console.error("Failed to fetch grocery listprice:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching grocery listprice:", error);
+    }
+  };
+  
+    return (
     <div>
       <h1>Grocery Cart</h1>
        {/* Display message if not logged in */}
@@ -129,6 +147,7 @@ const GroceryCartPage = () => {
        {/* Render GroceryCart only if logged in */}
        {isLoggedIn && (
         <GroceryCart
+            cartValue={cartValue}
             cartItems={cartItems}
             incrementQuantity={incrementQuantity}
             decrementQuantity={decrementQuantity}
