@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { LoginContext } from "../contexts/LoginContext";
+import PopUp from "../components/PopUp";
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -13,6 +14,10 @@ const Profile = () => {
   const [goal, setGoal] = useState('');
   const [units,setUnits] = useState('');
   const [activity, setActivity] = useState('');
+  const [weeklyBudget, setWeeklyBudget] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  
   //fetch profile info when user logs in
  
   useEffect(() => {
@@ -37,7 +42,8 @@ const Profile = () => {
         setDailyCal(userData.dailyCal|| '');
         setGoal(userData.goal || '');
         setUnits(userData.units || '');
-        setActivity(userData.activiy || '');
+        setActivity(userData.activity || '');
+        setWeeklyBudget(userData.weeklyBudget || '');
       }
     } 
     catch(error){
@@ -64,6 +70,7 @@ const Profile = () => {
           goal,
           activity,
           units,
+          weeklyBudget,
         }),
       } );
       console.log("updating user with",{
@@ -76,10 +83,28 @@ const Profile = () => {
           goal,
           units,
           activity,
-        } );
-    }
-    catch(error){
+          weeklyBudget,
+        });
+
+      // Show success popup
+      setPopupMessage("Profile updated successfully!");
+      setShowPopup(true);
+
+      // Hide popup after 5 seconds
+      setTimeout(() => {
+        setShowPopup(false);
+    }, 5000);
+    } catch (error) {
       console.error("Error updating user information:", error);
+
+      // Show error popup
+      setPopupMessage("Failed to update profile. Please try again.");
+      setShowPopup(true);
+
+      // Hide popup after 5 seconds
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
     }
   };
   
@@ -149,98 +174,124 @@ const Profile = () => {
         }
         
       }
+
+      // Show success popup
+      setPopupMessage(`BMR calculated successfully!`);
+      setShowPopup(true);
+
+      // Hide popup after 5 seconds
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
+    } else {
+      // Show error popup
+      setPopupMessage("Please fill in all fields to calculate BMR.");
+      setShowPopup(true);
+
+      // Hide popup after 5 seconds
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
     }
+  };
+
+  const handleWeeklyBudgetChange = (e) => {
+    setWeeklyBudget(e.target.value);
   };
 
   return( 
 
-    <div className = "Profile">
+    <div className="Profile">
       <h1>Nomcents Profile</h1>
+
+      {/* BMR Calculation Form Section */}
+      <div className="bmr-calculation-form">
+        <h2>BMR Calculation</h2>
         <div>
           <label>Units: 
-            <select value = {units} onChange={handleUnitsChange}>
+            <select value={units} onChange={handleUnitsChange}>
               <option value=""> Select</option>
               <option value="standard"> Standard</option>
               <option value="metric"> Metric</option>
             </select>
           </label>
-          </div> 
+        </div> 
 
         <div>
           <label>Gender: 
-            <select value = {gender} onChange={handleGenderChange}>
+            <select value={gender} onChange={handleGenderChange}>
               <option value=""> Select</option>
               <option value="male"> Male</option>
               <option value="female"> Female</option>
             </select>
           </label>
-          </div> 
+        </div> 
+
         <div>
-        {units == "standard" ? (
-          <>
-          <label> Weight:</label>
-          <input 
-            id="weight"
-            type="number"
-            value={weight}
-            onChange={handleDataChange}
-            placeholder="pounds"
-            />
-          </>
-        ) : (
-          <>
-          <label> Weight:</label>
-          <input 
-            id="weight"
-            type="number"
-            value={weight}
-            onChange={handleDataChange}
-            placeholder="kg"
-            />
-          </>
-        )}  
-          
-        </div>
-         <div>
-          {units == "standard" ? (
+          {units === "standard" ? (
             <>
-           <label> Height:</label>
-            <input 
-            id="height"
-            type="number"
-            value={height}
-            onChange={handleDataChange}
-            placeholder="inches"
-            /> 
+              <label>Weight:</label>
+              <input 
+                id="weight"
+                type="number"
+                value={weight}
+                onChange={handleDataChange}
+                placeholder="pounds"
+              />
             </>
           ) : (
             <>
-           <label> Height:</label>
-            <input 
-            id="height"
-            type="number"
-            value={height}
-            onChange={handleDataChange}
-            placeholder="cm"
-            /> 
+              <label>Weight:</label>
+              <input 
+                id="weight"
+                type="number"
+                value={weight}
+                onChange={handleDataChange}
+                placeholder="kg"
+              />
             </>
-          
           )}
-          
         </div>
+
         <div>
-          <label> Age:</label>
+          {units === "standard" ? (
+            <>
+              <label>Height:</label>
+              <input 
+                id="height"
+                type="number"
+                value={height}
+                onChange={handleDataChange}
+                placeholder="inches"
+              />
+            </>
+          ) : (
+            <>
+              <label>Height:</label>
+              <input 
+                id="height"
+                type="number"
+                value={height}
+                onChange={handleDataChange}
+                placeholder="cm"
+              />
+            </>
+          )}
+        </div>
+
+        <div>
+          <label>Age:</label>
           <input 
             id="age"
             type="number"
             value={age}
             onChange={handleDataChange}
-            />
-
+          />
         </div>
+
         <div>
           <label>Goals: 
-            <select value = {goal} onChange={handleGoalChange}>
+            <select value={goal} onChange={handleGoalChange}>
               <option value=""> Select</option>
               <option value="0"> Maintain weight</option>
               <option value="-1"> Lose one pound a week</option>
@@ -250,10 +301,10 @@ const Profile = () => {
             </select>
           </label>
         </div>
-        
+
         <div>
-          <label>ActivityLevel: 
-            <select value = {activity} onChange={handleActivityChange}>
+          <label>Activity Level: 
+            <select value={activity} onChange={handleActivityChange}>
               <option value=""> Select</option>
               <option value="1.2"> Sedentary (little to no exercise + work a desk job)</option>
               <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
@@ -263,35 +314,52 @@ const Profile = () => {
             </select>
           </label>
         </div>
+
         <div>
-          
-          <button onClick={handleBMR} > Calculate BMR</button>
+          <label>Weekly Budget:</label>
+          <input 
+            type="number"
+            value={weeklyBudget}
+            onChange={handleWeeklyBudgetChange}
+            placeholder="Weekly Budget"
+          />
         </div>
-                
-      <div>
+
+        <button onClick={handleBMR}>Calculate BMR</button>
+      </div>
+
+      {/* Current Calculations Section */}
+      <div className="current-calculations">
+        <h2>Current Calculations</h2>
         {isLoggedIn ? (
           <>
-          <h2>Your Profile</h2> 
-          <p>Name: {user.name}</p>
-          <p>Gender: {gender}</p>
-          <p>Weight: {weight}</p>
-          <p>Height: {height}</p>
-          <p>Age: {age}</p> 
-          <p>Daily Calories: {dailyCal}</p>
-          <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
-          <button onClick={updateUserInformation}> Save Information</button>
+            <h3>Your Profile</h3> 
+            <p>Name: {user.name}</p>
+            <p>Gender: {gender}</p>
+            <p>Weight: {weight}</p>
+            <p>Height: {height}</p>
+            <p>Age: {age}</p> 
+            <p>Daily Calories: {dailyCal}</p>
+            <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
+            <p>Weekly Budget: {weeklyBudget}</p>
+            <button onClick={updateUserInformation}>Save Information</button>
           </>
         ) : (
           <>
-          <p>Daily Calories: {dailyCal}</p>
-          <p>Daily Calories for Goal: {(dailyCal * activity )+ (500 * goal)}</p>
+            <p>Daily Calories: {dailyCal}</p>
+            <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
           </>
         )}
-         
-        
-        
       </div>
 
+      {/* Popup */}
+      {showPopup && (
+        <PopUp
+          message={popupMessage}
+          closePopup={() => setShowPopup(false)}
+          showLoginButton={false} // Assuming no login button is needed here
+        />
+      )}
     </div>
 
   ); 
