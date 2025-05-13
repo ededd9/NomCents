@@ -354,9 +354,11 @@ function ViewProducts() {
             email: user.email, // need to ensure that this is being defined
             fdcId: logData.fdcId,
             productName: logData.productName, // updated to match modal properties
-            servingSize: logData.servingSize,
+            servingAmount: logData.servingAmount,
+            servingUnit: logData.servingUnit,
             mealType: logData.mealType,
             timestamp: logData.timestamp, // might change to just the date later
+            nutrition: logData.nutrition,
           }),
         });
 
