@@ -663,7 +663,6 @@ async def search_product():
                             elif "protein" in nutrient_name:
                                 product_info["nutrition"]["protein"] = nutrient_value
                             elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
-                            elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
                                 product_info["nutrition"]["fat"] = nutrient_value
                             elif "carbohydrate" in nutrient_name:
                                 product_info["nutrition"]["carbohydrates"] = nutrient_value
@@ -847,7 +846,6 @@ async def search_product():
                             food_info["nutrition"]["calories"] = nutrient_value
                         elif "protein" in nutrient_name:
                             food_info["nutrition"]["protein"] = nutrient_value
-                        elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
                         elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
                             food_info["nutrition"]["fat"] = nutrient_value
                         elif "carbohydrate" in nutrient_name:
