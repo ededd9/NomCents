@@ -5,6 +5,7 @@ const FoodLogModal = ({ product, onClose, onSubmit }) => {
   const [servingAmount, setServingAmount] = useState("");
   const [servingUnit, setServingUnit] = useState("g"); // set grams as default value
   const [mealType, setMealType] = useState("breakfast");
+  const [logDate, setLogDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
 
   // convert macros to grams so that an accurate calorie count can be calculated
   const convertToGrams = (amount, unit) => {
@@ -61,14 +62,14 @@ const FoodLogModal = ({ product, onClose, onSubmit }) => {
       servingAmount,    // ex. 150
       servingUnit,      // ex. "oz"
       mealType,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(logDate).toISOString(), // Convert date to ISO format
       nutrition: scaledNutrition // need to send this instead of just product.nutrition
     });
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>Food Log</h3>
         <p>{product.name}</p>
 
@@ -95,6 +96,13 @@ const FoodLogModal = ({ product, onClose, onSubmit }) => {
           <option value="dinner">Dinner</option>
           <option value="snacks">Snacks</option>
         </select>
+
+        <label>Date:</label>
+        <input
+          type="date"
+          value={logDate}
+          onChange={(e) => setLogDate(e.target.value)}
+        />
 
         <button onClick={handleSubmit}>Submit</button>
         <button onClick={onClose}>Cancel</button>
