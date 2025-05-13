@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { LoginContext } from '../contexts/LoginContext';
 import WeightProgressChart from '../components/WeightProgressChart';
 import WeightLogger from '../components/WeightLogger';
+import SpendingProgressChart from '../components/SpendingProgressChart';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -185,14 +186,8 @@ const ProgressPage = () => {
         <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
             <h2>Your Weight Progress</h2>
             {content}
-            
-            {isLoggedIn && userProfile && ( // Only show logger if logged in and profile is available
-                <WeightLogger
-                    onWeightLogged={handleWeightLogged}
-                    userProfile={userProfile}
-                />
-            )}
             {actionStatus && <p style={{ marginTop: '10px', textAlign: 'center' }}><small>{actionStatus}</small></p>}
+            <SpendingProgressChart />
         </div>
     );
 };

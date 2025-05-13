@@ -5,10 +5,10 @@ import Homepage from "./pages/Homepage";
 import LoginPage from "./pages/LoginPage";
 import Profile from "./pages/Profile";
 import ViewProducts from "./pages/ViewProducts";
-import ViewProductDetails from "./pages/ViewProductDetails";
 import GroceryCartPage from "./pages/GroceryCartPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ProgressPage from "./pages/ProgressPage";
+import LogsPage from "./pages/LogsPage";
 
 function App() {
   let element = useRoutes([
@@ -16,10 +16,10 @@ function App() {
     { path: "/login", element: <LoginPage /> },
     { path: "/profile/:username", element: <Profile /> },
     { path: "/products", element: <ViewProducts /> },
-    { path: "/products/details/:id", element: <ViewProductDetails /> },
     { path: "/grocery-cart", element: <GroceryCartPage /> },
     { path: "/favorites", element: <FavoritesPage /> },
     { path: "/progress", element: <ProgressPage /> },
+    { path: "/logs", element: <LogsPage /> }
   ]);
 
   return (
@@ -41,7 +41,8 @@ function App() {
           <div className="right-nav">
             <a href="/products">Products</a>
             <a href="/favorites">Favorites</a>
-            <a href="/grocery-cart">ViewCart</a>
+            <a href="/grocery-cart">Grocery List</a>
+            <a href="/logs">Logs</a>
             <a href="/progress">Progress</a>
             <a href="/profile/:username">Profile</a>
             <LoginContext.Consumer>
