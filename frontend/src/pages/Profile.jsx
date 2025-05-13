@@ -74,7 +74,7 @@ const Profile = () => {
         }),
       } );
       console.log("updating user with",{
-         email,
+          email,
           weight,
           height,
           age,
