@@ -6,6 +6,19 @@ import SpendingProgressChart from '../components/SpendingProgressChart';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
+// Helper fcn for getting the current week's start and end dates
+const getCurrentWeekDates = () => {
+
+    const today = new Date();
+    const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay())); // Sunday
+    const lastDayOfWeek = new Date(today.setDate(firstDayOfWeek.getDate() + 6)); // Saturday
+
+    return {
+        start: firstDayOfWeek.toISOString().split('T')[0],
+        end: lastDayOfWeek.toISOString().split('T')[0],
+    };
+};
+
 const ProgressPage = () => {
     const { isLoggedIn, user } = useContext(LoginContext);
     const [chartData, setChartData] = useState({ labels: [], datasets: [] });
@@ -13,6 +26,10 @@ const ProgressPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [actionStatus, setActionStatus] = useState('');
+
+    // For plotting against weekly budget in spending chart
+    const [weeklySpending, setWeeklySpending] = useState(0);
+    const [weeklyDates, setWeeklyDates] = useState([]);
 
     const fetchData = useCallback(async () => {
 
@@ -35,7 +52,8 @@ const ProgressPage = () => {
 
             if (!profileResponse.ok) throw new Error(`Failed to fetch profile: ${profileResponse.statusText} (Status: ${profileResponse.status})`);
             const profileData = await profileResponse.json();
-            setUserProfile(profileData); // Set profile first, critical for units and goal
+            console.log("Profile data fetched:", profileData); // Debug log
+            setUserProfile(profileData); // Ensure this includes weeklyBudget
 
             if (!historyResponse.ok) throw new Error(`Failed to fetch weight history: ${historyResponse.statusText} (Status: ${historyResponse.status})`);
             const fetchedHistoryData = await historyResponse.json(); 
@@ -112,9 +130,55 @@ const ProgressPage = () => {
         }
     }, [isLoggedIn, user]);
 
+    const fetchWeeklySpending = async () => {
+        if (!isLoggedIn || !user?.email) return;
+
+        const { start, end } = getCurrentWeekDates();
+
+        try {
+            const response = await fetch(`${BACKEND_API_URL}/user/spending_logs?email=${user.email}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                // Process logs for the current week
+                const weeklyLogs = {};
+                for (let d = new Date(start); d <= new Date(end); d.setDate(d.getDate() + 1)) {
+                    const currentDate = d.toISOString().split('T')[0];
+                    weeklyLogs[currentDate] = result.logs[currentDate] || [];
+                }
+
+                // Calculate daily and cumulative totals
+                const dates = [];
+                const spendingTotals = [];
+                let cumulativeTotal = 0;
+
+                Object.keys(weeklyLogs).forEach(date => {
+                    dates.push(date);
+
+                    const dailyTotal = weeklyLogs[date].reduce((sum, log) => sum + log.amount, 0);
+                    cumulativeTotal += dailyTotal;
+                    spendingTotals.push(cumulativeTotal);
+                });
+
+                setWeeklySpending(spendingTotals);
+                setWeeklyDates(dates);
+            } else {
+                console.error("Error fetching spending logs:", result.message);
+            }
+        } catch (error) {
+            console.error("Error fetching spending logs:", error);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            fetchWeeklySpending();
+        }
+    }, [isLoggedIn]);
 
     const handleWeightLogged = () => {
         setActionStatus('');
@@ -162,17 +226,6 @@ const ProgressPage = () => {
                     chartData={chartData}
                     userProfile={userProfile}
                 />
-                {/* Delete button shown only if there's actual data in the first dataset */}
-                {chartData.datasets?.[0]?.data?.length > 0 && (
-                     <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                        <button
-                            onClick={handleDeleteLastWeightEntry}
-                            style={{ padding: '8px 15px', backgroundColor: '#cc0000', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                            Delete Last Weight Entry
-                        </button>
-                    </div>
-                )}
             </>
         );
     } else if (userProfile) { // If logged in, profile fetched, but no chart data after loading & no error
@@ -187,7 +240,11 @@ const ProgressPage = () => {
             <h2>Your Weight Progress</h2>
             {content}
             {actionStatus && <p style={{ marginTop: '10px', textAlign: 'center' }}><small>{actionStatus}</small></p>}
-            <SpendingProgressChart />
+            <SpendingProgressChart
+                weeklyDates={weeklyDates}
+                weeklySpending={weeklySpending}
+                weeklyBudget={userProfile?.weeklyBudget || 0}
+            />
         </div>
     );
 };
