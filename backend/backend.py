@@ -783,7 +783,7 @@ async def search_product():
             # format product data
             headers = {
                 "Accept": "application/json",
-                "Authorization": f"Bearer {token_cache["access_token"]}"
+                "Authorization": f"Bearer {token_cache['access_token']}"
             }
            
            # 
