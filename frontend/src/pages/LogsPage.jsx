@@ -1,174 +1,233 @@
-import React, { useState, useEffect, useContext } from 'react';
-import WeightLogger from '../components/WeightLogger';
-import SpendingLogger from '../components/SpendingLogger';
-import { LoginContext } from '../contexts/LoginContext';
+import React, { useState, useEffect, useContext } from "react";
+import { LoginContext } from "../contexts/LoginContext";
+import WeightLogger from "../components/WeightLogger";
+import SpendingLogger from "../components/SpendingLogger";
+
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+import { Pie } from "react-chartjs-2";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  ArcElement,
+  ChartDataLabels
+);
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 const LogsPage = () => {
-    const { user, isLoggedIn } = useContext(LoginContext); // Access user and login status from context
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
-    const [foodLogs, setFoodLogs] = useState({});
-    const [weightLogs, setWeightLogs] = useState([]);
-    const [spendingLogs, setSpendingLogs] = useState([]);
+  const { user, isLoggedIn } = useContext(LoginContext);
+  const [foodLogs, setFoodLogs] = useState({});
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [weightLogs, setWeightLogs] = useState([]);
+  const [spendingLogs, setSpendingLogs] = useState([]);
 
-    // Fetch food logs for the selected date
-    
-    const fetchFoodLogs = async () => {
-        if (!user?.email) return;
-        try {
-            const res = await fetch(`${BACKEND_API_URL}/food_logs?email=${user.email}&date=${selectedDate}`);
-            const data = await res.json();
-            setFoodLogs(data.logs || {}); // Set logs for the selected date
-        } catch (error) {
-            console.error("Error fetching food logs:", error);
-        }
+  // set a default to 1500 calories if there is no BMR calculated
+  const dailyCal = parseFloat(localStorage.getItem("dailyCal")) || 1500;
+
+  // formats the date so it looks nicer :)
+  const formatDate = (isoDate) =>
+    new Date(isoDate).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+  // compare to user's dailyCal, if they dont have one, use default 1500
+  const getCaloriesData = (dailyCal) => {
+    const total = foodLogs[selectedDate]?.dailyTotals?.calories ?? 0;
+
+    return {
+      labels: [selectedDate],
+      datasets: [
+        {
+          label: "Calories",
+          data: [total],
+          backgroundColor:
+            total > dailyCal
+              ? "rgba(255, 99, 132, 0.6)" // red if over dailyCal
+              : "rgba(75, 192, 192, 0.6)", // blue if under dailyCal
+        },
+      ],
+    };
+  };
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      if (!user?.email) return;
+      const res = await fetch(`${BACKEND_API_URL}/food_logs?email=${user.email}`);
+      const data = await res.json();
+      setFoodLogs(data.logs || {});
     };
 
-    // Fetch weight logs for the selected date
     const fetchWeightLogs = async () => {
-        if (!isLoggedIn || !user?.email) return; // Ensure the user is logged in
-        try {
-            const response = await fetch(`${BACKEND_API_URL}/user/weight_history?email=${user.email}`);
-            const result = await response.json();
-
-            if (response.ok) {
-                // Filter weight logs for the selected date
-                const filteredLogs = result.labels
-                    .map((label, index) => ({
-                        date: label,
-                        weight: result.data[index],
-                    }))
-                    .filter((log) => log.date === selectedDate);
-                setWeightLogs(filteredLogs);
-            } else {
-                console.error("Error fetching weight logs:", result.message);
-            }
-        } catch (error) {
-            console.error("Error fetching weight logs:", error);
-        }
+      const response = await fetch(`${BACKEND_API_URL}/user/weight_history?email=${user.email}`);
+      const result = await response.json();
+      if (response.ok) {
+        const filteredLogs = result.labels
+          .map((label, index) => ({
+            date: label,
+            weight: result.data[index],
+          }))
+          .filter((log) => log.date === selectedDate);
+        setWeightLogs(filteredLogs);
+      }
     };
 
-    // Fetch spending logs for the selected date
-    const fetchSpendingLogs = async (date) => {
-        if (!isLoggedIn || !user?.email) return; // Ensure the user is logged in
-        try {
-            const response = await fetch(`${BACKEND_API_URL}/user/spending_logs?date=${date}&email=${user.email}`);
-            const result = await response.json();
-
-            if (response.ok) {
-                setSpendingLogs(result.logs || []); // Assuming the backend returns { logs: [...] }
-            } else {
-                console.error("Error fetching spending logs:", result.message);
-            }
-        } catch (error) {
-            console.error("Error fetching spending logs:", error);
-        }
+    const fetchSpendingLogs = async () => {
+      const response = await fetch(`${BACKEND_API_URL}/user/spending_logs?date=${selectedDate}&email=${user.email}`);
+      const result = await response.json();
+      if (response.ok) {
+        setSpendingLogs(result.logs || []);
+      }
     };
 
-    // Fetch all logs when the selected date changes
-    useEffect(() => {
-        if (isLoggedIn) {
-            fetchFoodLogs();
-            fetchWeightLogs();
-            fetchSpendingLogs(selectedDate);
-        }
-    }, [selectedDate, isLoggedIn]);
-
-    // If the user is not logged in, display a message
-    if (!isLoggedIn) {
-        return <p>Please log in to view your logs.</p>;
+    if (isLoggedIn) {
+      fetchLogs();
+      fetchWeightLogs();
+      fetchSpendingLogs();
     }
+  }, [user, isLoggedIn, selectedDate]);
 
-    return (
-        <div style={{ padding: '20px' }}>
-            <h2>Logs Page</h2>
+  if (!isLoggedIn) return <p>Please log in to view your logs.</p>;
 
-            {/* Date Selector */}
-            <div style={{ marginBottom: '20px' }}>
-                <label htmlFor="datePicker" style={{ marginRight: '10px' }}>Select Date:</label>
-                <input
-                    type="date"
-                    id="datePicker"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                />
-            </div>
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Logs Page</h2>
 
-            {/* Display Logs for Selected Date */}
-            <div style={{ marginBottom: '20px' }}>
-                <h3>Logs for {selectedDate}</h3>
+      <label htmlFor="datePicker" style={{ marginRight: "10px" }}>
+        Select Date:
+      </label>
+      <input
+        type="date"
+        id="datePicker"
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+      />
 
-                {/* Food Logs */}
-                <div>
-                    <h4>Food Logs for {selectedDate}:</h4>
-                    {Object.keys(foodLogs).length === 0 ? (
-                        <p>No logs yet.</p>
-                    ) : (
-                        Object.entries(foodLogs).map(([meal, foods]) => (
-                            <div key={meal}>
-                                <strong>{meal.toUpperCase()}</strong>
-                                <ul>
-                                    {foods.map((item, index) => {
-                                        console.log("Food item:", item); // Debug log
-                                        return (
-                                            <li key={index}>
-                                                {item.productName} – {item.servingAmount} {item.servingUnit}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                        ))
-                    )}
+      <hr />
+
+      <h3>Calories for {formatDate(selectedDate)}</h3>
+      {foodLogs[selectedDate]?.dailyTotals ? (
+        <Bar
+          data={getCaloriesData(dailyCal)}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: { display: false },
+              y: { beginAtZero: true },
+            },
+          }}
+        />
+      ) : (
+        <p>No calorie data for this date.</p>
+      )}
+
+        {foodLogs[selectedDate] ? (
+        <div style={{ marginTop: "30px" }}>
+            <h3>{formatDate(selectedDate)}</h3>
+
+            {foodLogs[selectedDate].dailyTotals && (
+            <p>
+                <strong>Totals:</strong>{" "}
+                {foodLogs[selectedDate].dailyTotals.calories ?? 0} kcal,{" "}
+                {foodLogs[selectedDate].dailyTotals.protein ?? 0}g protein,{" "}
+                {foodLogs[selectedDate].dailyTotals.fat ?? 0}g fat,{" "}
+                {foodLogs[selectedDate].dailyTotals.carbohydrates ?? 0}g carbs
+            </p>
+            )}
+
+            {foodLogs[selectedDate].meals &&
+            Object.entries(foodLogs[selectedDate].meals).map(([meal, foods]) => (
+                <div
+                key={meal}
+                style={{
+                    backgroundColor: "#fdfdfd",
+                    padding: "18px",
+                    marginBottom: "20px",
+                    borderRadius: "10px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+                }}
+                >
+                <h4 style={{
+                    fontSize: "1.2rem",
+                    fontWeight: "600",
+                    marginBottom: "10px",
+                    borderBottom: "1px solid #ccc",
+                    paddingBottom: "5px"
+                }}>
+                {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                </h4>
+                <ul style={{
+                        listStyle: "none",
+                        paddingLeft: "0",
+                        margin: "0"
+                        }}>
+                        {foods.map((item, index) => (
+                            <li key={index} style={{
+                            padding: "6px 0",
+                            borderBottom: "1px solid #eee"
+                            }}>
+                            <strong>{item.productName}</strong> <span style={{ color: "#555" }}>– {item.servingAmount} {item.servingUnit}</span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
-
-                {/* Weight Logs */}
-                <div>
-                    <h4>Weight Logs:</h4>
-                    {weightLogs.length > 0 ? (
-                        <ul>
-                            {weightLogs.map((log, index) => (
-                                <li key={index}>
-                                    {log.weight} lbs
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No weight logs for this date.</p>
-                    )}
-                </div>
-
-                {/* Add Weight Log Form */}
-                <div style={{ marginTop: '20px' }}>
-                    <h4>Add Weight Log:</h4>
-                    <WeightLogger onWeightLogged={fetchWeightLogs} selectedDate={selectedDate} />
-                </div>
-
-                {/* Spending Logs */}
-                <div style={{ marginTop: '20px' }}>
-                    <h4>Spending Logs:</h4>
-                    {spendingLogs.length > 0 ? (
-                        <ul>
-                            {spendingLogs.map((log, index) => (
-                                <li key={index}>
-                                    {log.description || 'N/A'} - ${log.amount} 
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No spending logs for this date.</p>
-                    )}
-                </div>
-
-                {/* Add Spending Log Form */}
-                <div style={{ marginTop: '20px' }}>
-                    <h4>Add Spending Log:</h4>
-                    <SpendingLogger onSpendingLogged={() => fetchSpendingLogs(selectedDate)} selectedDate={selectedDate}/>
-                </div>
-            </div>
+            ))}
         </div>
-    );
+        ) : (
+        <p>No food logs for this date.</p>
+        )}
+
+
+      <hr />
+
+      <h3>Weight Logs for {formatDate(selectedDate)}</h3>
+      {weightLogs.length > 0 ? (
+        <ul>
+          {weightLogs.map((log, index) => (
+            <li key={index}>{log.weight} lbs</li>
+          ))}
+        </ul>
+      ) : (
+        <p>No weight logs for this date.</p>
+      )}
+      <WeightLogger onWeightLogged={() => {}} selectedDate={selectedDate} />
+
+      <h3>Spending Logs for {formatDate(selectedDate)}</h3>
+      {spendingLogs.length > 0 ? (
+        <ul>
+          {spendingLogs.map((log, index) => (
+            <li key={index}>
+              {log.description || "N/A"} - ${log.amount}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No spending logs for this date.</p>
+      )}
+      <SpendingLogger
+        onSpendingLogged={() => {}}
+        selectedDate={selectedDate}
+      />
+    </div>
+  );
 };
 
 export default LogsPage;
