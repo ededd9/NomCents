@@ -433,6 +433,31 @@ function ViewProducts() {
     setSelectedProduct(null);
     setShowProductDetails(false);
   };
+  
+  const calculateNutritionScore = (product) => {
+    
+    let dvA = 0;
+    let dvC = 0;
+    Object.entries(product.nutrition.vitamins || {}).forEach(([key, value]) => {
+      console.log(key, value);
+      if (key.includes("Vitamin A")) {
+        console.log("Vitamin A value:", value);
+        dvA = value/2700;
+      }
+      
+      if (key.includes("Vitamin C")) {
+        console.log("Vitamin C value:", value);
+        dvC = value/90;
+      }
+      
+    });
+    console.log(dvA); 
+    console.log(dvC); 
+    console.log(product.nutrition);
+    console.log(product);
+    let score = 0.710 - (0.0538 * product.nutrition.fat)- (0.423 * product.nutrition.saturatedfat) - (0.00398 * product.nutrition.cholesterol) - (0.00254 * product.nutrition.sodium) - (0.0300 * product.nutrition.carbohydrates) + (0.561 * product.nutrition.fiber) - (0.0245 * product.nutrition.sugars) + (0.123 * product.nutrition.protein) + (0.00562 * dvA) + (0.0137 * dvC) + (0.0685 * (product.nutrition.calcium / 1300)) - (0.0186 * (product.nutrition.iron / 18));
+    return score;
+  };
 
   return (
     <div className="ViewProducts">
@@ -709,16 +734,18 @@ function ViewProducts() {
               <p>Brand: {selectedProduct.brandName}</p>
               <p>Brand Owner: {selectedProduct.brandOwner}</p>
               <p>Ingredients: {selectedProduct.ingredients}</p>
-              <h2>Nutrition</h2>
+              <p>Package weight/Total amount {selectedProduct.packageSize}</p>
+              <h2>Nutrition Per Serving</h2>
               <ul>
-                <li>Calories: {selectedProduct.nutrition.calories}</li>
-                <li>Protein: {selectedProduct.nutrition.protein}</li>
-                <li>Fat: {selectedProduct.nutrition.fat}</li>
-                <li>
-                  Carbohydrates: {selectedProduct.nutrition.carbohydrates}
-                </li>
-                <li>Sugars: {selectedProduct.nutrition.sugars}</li>
-                <li>Fiber: {selectedProduct.nutrition.fiber}</li>
+                <li>Serving size: {selectedProduct.servingsize}, {selectedProduct.servingSizeUnit} </li>
+                <li>Calories: {(selectedProduct.nutrition.calories / selectedProduct.servingsize).toFixed(2)}</li>
+                <li>Protein: {(selectedProduct.nutrition.protein / selectedProduct.servingsize).toFixed(2)}</li>
+                <li>Fat: {(selectedProduct.nutrition.fat / selectedProduct.servingsize).toFixed(2)}</li> 
+                <li>Carbohydrates: {(selectedProduct.nutrition.carbohydrates / selectedProduct.servingsize).toFixed(2)}</li>
+                <li>Sugars: {(selectedProduct.nutrition.sugars / selectedProduct.servingsize).toFixed(2)}</li> 
+                <li>Fiber: {(selectedProduct.nutrition.fiber / selectedProduct.servingsize).toFixed(2)}</li>
+                <li>Cholesterol: {(selectedProduct.nutrition.cholesterol / selectedProduct.servingsize).toFixed(2)}</li>
+                <li>Nutrition score: {(calculateNutritionScore(selectedProduct) / selectedProduct.servingsize).toFixed(2)}</li>
               </ul>
               <h2>Vitamins and Minerals</h2>
               <ul>
@@ -730,6 +757,7 @@ function ViewProducts() {
                   )
                 )}
               </ul>
+
               {showPriceComparison && (
                 <div style={{ marginTop: "20px" }}>
                   <h2>Price Comparison</h2>

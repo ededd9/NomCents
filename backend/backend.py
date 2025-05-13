@@ -610,12 +610,18 @@ async def search_product():
                         "brandOwner": usda_product.get("brandOwner", "N/A"),
                         "ingredients": usda_product.get("ingredients", "Ingredients not available"),
                         "nutrition": {
-                            "calories": None,
-                            "protein": None,
-                            "fat": None,
-                            "carbohydrates": None,
-                            "sugars": None,
-                            "vitamins": {}
+                            "calories": 0,
+                            "protein": 0,
+                            "fat": 0,
+                            "carbohydrates": 0,
+                            "sugars": 0,
+                            "vitamins": {},
+                            "saturatedfat": 0,
+                            "sodium": 0, 
+                            "iron": 0, 
+                            "calcium": 0, 
+                            "fiber": 0,
+                            "cholesterol": 0, 
                         }
                     })
                     
@@ -629,7 +635,7 @@ async def search_product():
                                 product_info["nutrition"]["calories"] = nutrient_value
                             elif "protein" in nutrient_name:
                                 product_info["nutrition"]["protein"] = nutrient_value
-                            elif "total lipid" in nutrient_name or "fat" in nutrient_name:
+                            elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
                                 product_info["nutrition"]["fat"] = nutrient_value
                             elif "carbohydrate" in nutrient_name:
                                 product_info["nutrition"]["carbohydrates"] = nutrient_value
@@ -638,6 +644,18 @@ async def search_product():
                             elif "vitamin" in nutrient_name:
                                 vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
                                 product_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
+                            elif "saturated fat" in nutrient_name:
+                                food_info["nutrition"]["saturatedfat"] = nutrient_value
+                            elif "sodium" in nutrient_name:
+                                food_info["nutrition"]["sodium"] = nutrient_value
+                            elif "iron" in nutrient_name:
+                                food_info["nutrition"]["iron"] = nutrient_value
+                            elif "calcium" in nutrient_name:
+                                food_info["nutrition"]["calcium"] = nutrient_value
+                            elif "cholesterol" in nutrient_name:
+                                food_info["nutrition"]["cholesterol"] = nutrient_value
+                            elif "fiber" in nutrient_name:
+                                food_info["nutrition"]["fiber"] = nutrient_value
                         priority_results.append(product_info)
                     else:
                         lower_priority_results.append(product_info)
@@ -741,7 +759,7 @@ async def search_product():
                 name = food.get("description", "Unknown")
                 brandOwner = food.get("brandOwner", "Unknown")
                 brandName = food.get("brandName", "N/A")
-       
+                #print(food) 
                 # get image url using google search api
                 # image_url = get_product_image(name, brand)
        
@@ -754,13 +772,23 @@ async def search_product():
                     "brandOwner": brandOwner,
                     "brandName": brandName,
                     "ingredients": food.get("ingredients", "Ingredients not available"),
+                    "servingsize": food.get("servingSize","Unknown"),
+                    "servingSizeUnit": food.get("servingSizeUnit","Unknown"),
+                    "householdserving": food.get("householdServingFullText","Unknown"),
+                    "packageSize": food.get("packageWeight","Unknown"),
                     "nutrition": {
-                        "calories": None,
-                        "protein": None,
-                        "fat": None,
-                        "carbohydrates": None,
-                        "sugars": None,
-                        "vitamins": {}
+                        "calories": 0,
+                        "protein": 0,
+                        "fat": 0,
+                        "carbohydrates": 0,
+                        "sugars": 0,
+                        "vitamins": {},
+                        "saturatedfat": 0,
+                        "sodium": 0, 
+                        "iron": 0, 
+                        "calcium": 0, 
+                        "fiber": 0,
+                        "cholesterol": 0, 
                     }
                 }
                
@@ -775,7 +803,7 @@ async def search_product():
                             food_info["nutrition"]["calories"] = nutrient_value
                         elif "protein" in nutrient_name:
                             food_info["nutrition"]["protein"] = nutrient_value
-                        elif "total lipid" in nutrient_name or "fat" in nutrient_name:
+                        elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
                             food_info["nutrition"]["fat"] = nutrient_value
                         elif "carbohydrate" in nutrient_name:
                             food_info["nutrition"]["carbohydrates"] = nutrient_value
@@ -784,7 +812,20 @@ async def search_product():
                         elif "vitamin" in nutrient_name:
                             vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
                             food_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
-           
+                        elif "saturated" in nutrient_name:
+                            food_info["nutrition"]["saturatedfat"] = nutrient_value
+                        elif "sodium" in nutrient_name:
+                            food_info["nutrition"]["sodium"] = nutrient_value
+                        elif "iron" in nutrient_name:
+                            food_info["nutrition"]["iron"] = nutrient_value
+                        elif "calcium" in nutrient_name:
+                            food_info["nutrition"]["calcium"] = nutrient_value
+                        elif "cholesterol" in nutrient_name:
+                            food_info["nutrition"]["cholesterol"] = nutrient_value
+                        elif "fiber" in nutrient_name:
+                            food_info["nutrition"]["fiber"] = nutrient_value
+                        elif "servingSize" in nutrient_name:
+                            food_info["nutrition"]["size"] = nutrient_value
                
                 # add each product to results list
                 results.append(food_info)
@@ -818,7 +859,8 @@ async def search_product():
                 "next_usda_page": current_usda_page if current_usda_page <= total_pages else None
             }
         })
-
+    # error checking, 400 = bad request
+    
 
 
 # Endpoint for price comparison for the 10 (max) stores near the user's zipcode -- pass store location IDs as an array in the request body
