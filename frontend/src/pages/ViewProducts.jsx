@@ -298,7 +298,7 @@ function ViewProducts() {
     }
   };
 
-  // Functions for adding/removing item from favorites list <-- New Functions (KEEP)
+  // Functions for adding/removing item from favorites list
   const addToFavorites = (product) => {
     if (isLoggedIn && user) {
       if (favoritesList.some((item) => item.fdcId === product.fdcId)) {
@@ -438,271 +438,266 @@ function ViewProducts() {
     <div className="ViewProducts">
       <h1>NomCents</h1>
 
-      <div className="search-filters">
-        {/* Search Inputs */}
-        <input
-          type="text"
-          placeholder="Search for a product..."
-          value={product}
-          onChange={(e) => setProduct(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && searchProducts(1)}
-        />
-        <button onClick={() => searchProducts(1)} disabled={isLoading}>
-          Search
-        </button>
-
-        {/* Filters */}
-        <fieldset>
-          <legend>Data Type</legend>
-          <label>
+      {/* Filters Section - Moved to top left under navbar */}
+      <div className="filter-sidebar">
+        <div className="filter-section">
+          <h3>Filters</h3>
+          <label className="price-filter">
             <input
               type="checkbox"
-              value="Branded"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("Branded")}
-            />{" "}
-            Branded
+              checked={showOnlyPriced}
+              onChange={(e) => setShowOnlyPriced(e.target.checked)}
+            />
+            Show Priced Products Only
           </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Foundation"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("Foundation")}
-            />{" "}
-            Foundation
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Survey (FNDDS)"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("Survey (FNDDS)")}
-            />{" "}
-            Survey (FNDDS)
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="SR Legacy"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("SR Legacy")}
-            />{" "}
-            SR Legacy
-          </label>
-        </fieldset>
 
-        <label htmlFor="sortBy">Sort By</label>
-        <select
-          id="sortBy"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="dataType.keyword">Data Type</option>
-          <option value="lowercaseDescription.keyword">Description</option>
-          <option value="fdcId">FDC ID</option>
-          <option value="brandOwner.keyword">Brand Owner</option>
-          <option value="publishedDate">Published Date</option>
-        </select>
+          <div className="sort-filters">
+            <label htmlFor="sortBy">Sort By</label>
+            <select
+              id="sortBy"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="dataType.keyword">Data Type</option>
+              <option value="lowercaseDescription.keyword">Description</option>
+              <option value="fdcId">FDC ID</option>
+              <option value="brandOwner.keyword">Brand Owner</option>
+              <option value="publishedDate">Published Date</option>
+            </select>
 
-        <label htmlFor="sortOrder">Sort Order</label>
-        <select
-          id="sortOrder"
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
+            <label htmlFor="sortOrder">Sort Order</label>
+            <select
+              id="sortOrder"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
 
-        <label htmlFor="brandOwner">Brand Owner</label>
-        <input
-          type="text"
-          id="brandOwner"
-          placeholder="Enter brand owner (optional)..."
-          value={brandOwner}
-          onChange={(e) => setBrandOwner(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && searchProducts(1)}
-        />
-
-        <label>
-          <input
-            type="checkbox"
-            checked={showOnlyPriced}
-            onChange={(e) => setShowOnlyPriced(e.target.checked)}
-          />
-          Show Priced Products Only
-        </label>
-
-        <div className="zip-and-store">
-          <label htmlFor="zipCode">Enter Zip Code:</label>
-          <input
-            type="text"
-            id="zipCode"
-            placeholder="Enter your zip code..."
-            value={displayedZipCode} // Bind to displayedZipCode
-            onChange={(e) => {
-              const value = e.target.value;
-              if (/^\d*$/.test(value)) {
-                // Allow only numeric input
-                setDisplayedZipCode(value); // Update displayedZipCode as the user types
-                if (value.length === 5) {
-                  setZipCode(value); // Update zipCode only when input is exactly 5 digits
-                }
-              }
-            }}
-            maxLength={5} // Limit input to 5 characters
-          />
-
-          <label htmlFor="storeSelect">Select Store:</label>
-          <Select
-            id="storeSelect"
-            options={storeOptions}
-            value={selectedStore}
-            onChange={(selectedOption) => setSelectedStore(selectedOption)}
-            placeholder="Select a store..."
-            isSearchable
-            className="react-select"
-            classNamePrefix="react-select"
-          />
+          <div className="data-type-filters">
+            <h4>Data Type</h4>
+            <label>
+              <input
+                type="checkbox"
+                value="Branded"
+                onChange={handleDataTypeChange}
+                checked={dataType.includes("Branded")}
+              />{" "}
+              Branded
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                value="Foundation"
+                onChange={handleDataTypeChange}
+                checked={dataType.includes("Foundation")}
+              />{" "}
+              Foundation
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                value="Survey (FNDDS)"
+                onChange={handleDataTypeChange}
+                checked={dataType.includes("Survey (FNDDS)")}
+              />{" "}
+              Survey (FNDDS)
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                value="SR Legacy"
+                onChange={handleDataTypeChange}
+                checked={dataType.includes("SR Legacy")}
+              />{" "}
+              SR Legacy
+            </label>
+          </div>
         </div>
       </div>
 
-      <div>
-        <h2>Search Results</h2>
-        {isLoading && currentPage === 1 ? <p>Loading results...</p> : null}
-        {results.length === 0 && !isLoading ? <p>No products found.</p> : null}
-        <div className="search-results">
-          {" "}
-          {/* Changed from ul to div for card layout */}
-          {results.map((product) => {
-            const inGroceryList = groceryList.find(
-              (item) => item.fdcId === product.fdcId
-            );
-            const isFavorite = favoritesList.some(
-              // <-- Check if product is favorite (KEEP)
-              (item) => item.fdcId === product.fdcId
-            );
-            return (
-              <div key={product.fdcId}>
-                <div
-                  className="product-card"
-                  onClick={() => viewProductDetails(product)} // Open product details popup on click
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>{product.name}</h3>
-                  <p>
-                    Price at Krogers:{" "}
-                    {product.price != "n/a"
-                      ? `$${product.price}`
-                      : product.price}
-                  </p>
-                  <p>Brand Owner: {product.brandOwner}</p>
-                  <p>Brand Name: {product.brandName}</p>
-                  <p>Ingredients: {product.ingredients}</p>
-                  <p>
-                    <ul>
-                      {product.foodNutrients
-                        ? product.foodNutrients.map((nutrient) => (
-                            <li key={nutrient.nutrientId}>
-                              {nutrient.nutrientName}: {nutrient.value}
-                            </li>
-                          ))
-                        : "None"}
-                    </ul>
-                  </p>
-                  {inGroceryList ? (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          decrementQuantity(product);
-                        }}
-                      >
-                        -
-                      </button>
-                      <span>{inGroceryList.quantity}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          incrementQuantity(product);
-                        }}
-                      >
-                        +
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFromGroceryList(product);
-                        }}
-                      >
-                        Remove from Grocery List
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToGroceryList(product);
-                      }}
-                    >
-                      Add to Grocery List
-                    </button>
-                  )}
-                  {isFavorite ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromFavorites(product);
-                      }}
-                    >
-                      Remove from Favorites
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToFavorites(product);
-                      }}
-                    >
-                      Add to Favorites
-                    </button>
-                  )}
-                  {isLoggedIn && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openLogModal(product);
-                      }}
-                    >
-                      Log Food
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {/* Main Content Area - Now contains only search and products */}
+      <div className="main-content-area">
+        {/* Search and Store Selection - Centered */}
+        <div className="search-controls-center">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search for a product..."
+              value={product}
+              onChange={(e) => setProduct(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && searchProducts(1)}
+            />
+            <button onClick={() => searchProducts(1)} disabled={isLoading}>
+              Search
+            </button>
+          </div>
 
-        {showPopup && (
-          <Popup
-            message={popupMessage}
-            closePopup={handleClosePopup}
-            showLoginButton={showLoginButton}
-          />
-        )}
-        {/* Load More Button */}
-        {results.length > 0 && currentPage < totalPages && (
-          <button
-            onClick={loadMoreProducts}
-            disabled={isLoading}
-            style={{ marginTop: "20px" }}
-          >
-            {" "}
-            {/* Added margin top */}
-            {isLoading ? "Loading..." : "Load More"}
-          </button>
-        )}
+          <div className="store-selection">
+            <div className="zip-input">
+              <label htmlFor="zipCode">Zip Code:</label>
+              <input
+                type="text"
+                id="zipCode"
+                placeholder="Enter zip..."
+                value={displayedZipCode}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setDisplayedZipCode(value);
+                    if (value.length === 5) {
+                      setZipCode(value);
+                    }
+                  }
+                }}
+                maxLength={5}
+              />
+            </div>
+
+            <div className="store-dropdown">
+              <label htmlFor="storeSelect">Store:</label>
+              <Select
+                id="storeSelect"
+                options={storeOptions}
+                value={selectedStore}
+                onChange={(selectedOption) => setSelectedStore(selectedOption)}
+                placeholder="Select store..."
+                isSearchable
+                className="react-select"
+                classNamePrefix="react-select"
+              />
+            </div>
+          </div>
+        </div>
+        {/* Search results */}
+        <div className="search-results-container">
+          <h2>Search Results</h2>
+          {isLoading && currentPage === 1 ? <p>Loading results...</p> : null}
+          {results.length === 0 && !isLoading ? (
+            <p>No products found.</p>
+          ) : null}
+
+          <div className="search-results">
+            {results.map((product) => {
+              const inGroceryList = groceryList.find(
+                (item) => item.fdcId === product.fdcId
+              );
+              const isFavorite = favoritesList.some(
+                (item) => item.fdcId === product.fdcId
+              );
+
+              return (
+                <div key={product.fdcId} className="product-card">
+                  <div
+                    onClick={() => viewProductDetails(product)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <h3>{product.name}</h3>
+                    <p>
+                      Price at Krogers:{" "}
+                      {product.price != "n/a"
+                        ? `$${product.price}`
+                        : product.price}
+                    </p>
+                    <p>Brand Owner: {product.brandOwner}</p>
+                    <p>Brand Name: {product.brandName}</p>
+                    <p>Ingredients: {product.ingredients}</p>
+                    <p>
+                      <ul>
+                        {product.foodNutrients
+                          ? product.foodNutrients.map((nutrient) => (
+                              <li key={nutrient.nutrientId}>
+                                {nutrient.nutrientName}: {nutrient.value}
+                              </li>
+                            ))
+                          : "None"}
+                      </ul>
+                    </p>
+                    {inGroceryList ? (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            decrementQuantity(product);
+                          }}
+                        >
+                          -
+                        </button>
+                        <span>{inGroceryList.quantity}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            incrementQuantity(product);
+                          }}
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromGroceryList(product);
+                          }}
+                        >
+                          Remove from Grocery List
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToGroceryList(product);
+                        }}
+                      >
+                        Add to Grocery List
+                      </button>
+                    )}
+                    {isFavorite ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFromFavorites(product);
+                        }}
+                      >
+                        Remove from Favorites
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToFavorites(product);
+                        }}
+                      >
+                        Add to Favorites
+                      </button>
+                    )}
+                    {isLoggedIn && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openLogModal(product);
+                        }}
+                      >
+                        Log Food
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {results.length > 0 && currentPage < totalPages && (
+            <button
+              onClick={loadMoreProducts}
+              disabled={isLoading}
+              className="load-more"
+            >
+              {isLoading ? "Loading..." : "Load More"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Product Details Popup */}
