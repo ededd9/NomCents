@@ -109,11 +109,14 @@ const LogsPage = () => {
                             <div key={meal}>
                                 <strong>{meal.toUpperCase()}</strong>
                                 <ul>
-                                    {foods.map((item, index) => (
-                                        <li key={index}>
-                                            {item.productName} – {item.servingAmount} {item.servingUnit}
-                                        </li>
-                                    ))}
+                                    {foods.map((item, index) => {
+                                        console.log("Food item:", item); // Debug log
+                                        return (
+                                            <li key={index}>
+                                                {item.productName} – {item.servingAmount} {item.servingUnit}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                         ))
