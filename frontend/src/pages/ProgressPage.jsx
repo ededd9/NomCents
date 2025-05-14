@@ -3,6 +3,7 @@ import { LoginContext } from '../contexts/LoginContext';
 import WeightProgressChart from '../components/WeightProgressChart';
 import WeightLogger from '../components/WeightLogger';
 import SpendingProgressChart from '../components/SpendingProgressChart';
+import WeeklyCaloriesChart from '../components/WeeklyCaloriesChart';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -30,6 +31,11 @@ const ProgressPage = () => {
     // For plotting against weekly budget in spending chart
     const [weeklySpending, setWeeklySpending] = useState(0);
     const [weeklyDates, setWeeklyDates] = useState([]);
+
+    // for charting weekly calorie intake
+    const [weeklyCalories, setWeeklyCalories] = useState([]);
+    const [weeklyCalorieDates, setWeeklyCalorieDates] = useState([]);
+
 
     const fetchData = useCallback(async () => {
 
@@ -170,6 +176,38 @@ const ProgressPage = () => {
         }
     };
 
+    const fetchWeeklyCalories = async () => {
+        if (!isLoggedIn || !user?.email) return;
+      
+        const { start, end } = getCurrentWeekDates();
+      
+        try {
+          const response = await fetch(`${BACKEND_API_URL}/food_logs?email=${user.email}`);
+          const result = await response.json();
+      
+          if (response.ok && result.logs) {
+            const weeklyLogs = {};
+            for (let d = new Date(start); d <= new Date(end); d.setDate(d.getDate() + 1)) {
+              const date = new Date(d);
+              const currentDate = date.toISOString().split("T")[0];
+              const dayLog = result.logs[currentDate];
+              weeklyLogs[currentDate] = dayLog?.dailyTotals?.calories ?? 0;
+            }
+      
+            const dates = Object.keys(weeklyLogs);
+            const calories = Object.values(weeklyLogs);
+      
+            setWeeklyCalorieDates(dates);
+            setWeeklyCalories(calories);
+          } else {
+            console.error("Error fetching food logs:", result.message);
+          }
+        } catch (err) {
+          console.error("Error fetching weekly calories:", err);
+        }
+      };
+      
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
@@ -177,6 +215,7 @@ const ProgressPage = () => {
     useEffect(() => {
         if (isLoggedIn) {
             fetchWeeklySpending();
+            fetchWeeklyCalories();
         }
     }, [isLoggedIn]);
 
@@ -244,6 +283,10 @@ const ProgressPage = () => {
                 weeklyDates={weeklyDates}
                 weeklySpending={weeklySpending}
                 weeklyBudget={userProfile?.weeklyBudget || 0}
+            />
+            <WeeklyCaloriesChart
+                weeklyCalorieDates={weeklyCalorieDates}
+                weeklyCalories={weeklyCalories}
             />
         </div>
     );

@@ -3,26 +3,27 @@ import { LoginContext } from "../contexts/LoginContext";
 import WeightLogger from "../components/WeightLogger";
 import SpendingLogger from "../components/SpendingLogger";
 
-import { Bar } from "react-chartjs-2";
+// combined with pie import
+import { Bar, Pie } from "react-chartjs-2";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
   BarElement,
+  ArcElement,
   CategoryScale,
   LinearScale,
   Tooltip,
-  Legend,
-  ArcElement,
+  Legend
 } from "chart.js";
-import { Pie } from "react-chartjs-2";
-import ChartDataLabels from "chartjs-plugin-datalabels";
 
+// register the chart functionalities
 ChartJS.register(
   BarElement,
+  ArcElement,
   CategoryScale,
   LinearScale,
   Tooltip,
   Legend,
-  ArcElement,
   ChartDataLabels
 );
 
@@ -39,12 +40,18 @@ const LogsPage = () => {
   const dailyCal = parseFloat(localStorage.getItem("dailyCal")) || 1500;
 
   // formats the date so it looks nicer :)
-  const formatDate = (isoDate) =>
-    new Date(isoDate).toLocaleDateString("en-US", {
+  // had to update bc days weren't being displayed correctly
+
+  const formatDate = (isoDate) => {
+    const [year, month, day] = isoDate.split("-");
+    const localDate = new Date(year, month - 1, day);
+    return localDate.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
+  };
+  
 
   // compare to user's dailyCal, if they dont have one, use default 1500
   const getCaloriesData = (dailyCal) => {
@@ -63,6 +70,32 @@ const LogsPage = () => {
         },
       ],
     };
+  };
+  
+  const handleDeleteFoodLog = async (mealType, index) => {
+    if (!user?.email || !selectedDate) return;
+    try {
+      const res = await fetch(`${BACKEND_API_URL}/food_logs/delete`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          date: selectedDate,
+          meal: mealType,
+          index: index,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        const updatedRes = await fetch(`${BACKEND_API_URL}/food_logs?email=${user.email}`);
+        const updatedData = await updatedRes.json();
+        setFoodLogs(updatedData.logs || {});
+      } else {
+        console.error("Failed to delete food log:", result.message);
+      }
+    } catch (err) {
+      console.error("Error deleting food log:", err);
+    }
   };
 
   useEffect(() => {
@@ -153,42 +186,63 @@ const LogsPage = () => {
             </p>
             )}
 
-            {foodLogs[selectedDate].meals &&
+{foodLogs[selectedDate].meals &&
             Object.entries(foodLogs[selectedDate].meals).map(([meal, foods]) => (
-                <div
+              <div
                 key={meal}
                 style={{
-                    backgroundColor: "#fdfdfd",
-                    padding: "18px",
-                    marginBottom: "20px",
-                    borderRadius: "10px",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+                  backgroundColor: "#fdfdfd",
+                  padding: "18px",
+                  marginBottom: "20px",
+                  borderRadius: "10px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
                 }}
-                >
+              >
                 <h4 style={{
-                    fontSize: "1.2rem",
-                    fontWeight: "600",
-                    marginBottom: "10px",
-                    borderBottom: "1px solid #ccc",
-                    paddingBottom: "5px"
+                  fontSize: "1.2rem",
+                  fontWeight: "600",
+                  marginBottom: "10px",
+                  borderBottom: "1px solid #ccc",
+                  paddingBottom: "5px"
                 }}>
-                {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                  {meal.charAt(0).toUpperCase() + meal.slice(1)}
                 </h4>
-                <ul style={{
-                        listStyle: "none",
-                        paddingLeft: "0",
-                        margin: "0"
-                        }}>
-                        {foods.map((item, index) => (
-                            <li key={index} style={{
-                            padding: "6px 0",
-                            borderBottom: "1px solid #eee"
-                            }}>
-                            <strong>{item.productName}</strong> <span style={{ color: "#555" }}>– {item.servingAmount} {item.servingUnit}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <ul style={{ listStyle: "none", paddingLeft: "0", margin: "0" }}>
+                  {foods.map((item, index) => (
+                    <li
+                      key={index}
+                      style={{
+                        padding: "6px 0",
+                        borderBottom: "1px solid #eee",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                      }}
+                    >
+                      <span>
+                        <strong>{item.productName}</strong>{" "}
+                        <span style={{ color: "#555" }}>
+                          - {item.servingAmount} {item.servingUnit}
+                        </span>
+                      </span>
+                      <button
+                        onClick={() => handleDeleteFoodLog(meal, index)}
+                        style={{
+                          backgroundColor: "#ff4d4f",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "4px",
+                          padding: "4px 8px",
+                          cursor: "pointer",
+                          fontSize: "0.8rem"
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
         </div>
         ) : (
