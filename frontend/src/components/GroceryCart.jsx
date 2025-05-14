@@ -28,6 +28,10 @@ const GroceryCart = ({
                     marginBottom: "10px",
                     paddingBottom: "10px",
                     borderBottom: "1px solid black",
+                    border: "2px solid rgba(0, 0, 0, 0.2)",
+                    padding: "15px",
+                    borderRadius: "5px",
+                    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
                   }}
                 >
                   {" "}
@@ -130,7 +134,7 @@ const GroceryCart = ({
                     style={{
                       fontSize: "0.8rem",
                       marginLeft: "10px",
-                      color: "red",
+                      color: "white",
                       flexShrink: 0,
                     }} // Prevent shrinking
                   >

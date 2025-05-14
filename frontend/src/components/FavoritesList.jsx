@@ -88,11 +88,11 @@ const FavoritesList = ({
                   <button
                     onClick={() => removeFromFavorites(product.fdcId)}
                     style={{
-                      color: "red",
+                      color: "white",
                       padding: "8px 12px",
                       border: "1px solid #ccc",
                       borderRadius: "4px",
-                      backgroundColor: "transparent",
+                      backgroundColor: "#000000d7",
                       cursor: "pointer",
                       whiteSpace: "nowrap",
                     }}
@@ -104,8 +104,8 @@ const FavoritesList = ({
                     onClick={() => addToGroceryList(product)}
                     disabled={isInCart} // Disable button if item is already in the cart
                     style={{
-                      backgroundColor: isInCart ? "#e0e0e0" : "#4CAF50", // Visual feedback
-                      color: isInCart ? "#666" : "white",
+                      backgroundColor: isInCart ? "#000000d7" : "#000000d7", // Visual feedback
+                      color: isInCart ? "white" : "white",
                       padding: "8px 12px",
                       border: "none",
                       borderRadius: "4px",
@@ -113,7 +113,7 @@ const FavoritesList = ({
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {isInCart ? "In Cart" : "Add to Cart"}
+                    {isInCart ? "In Grocery List" : "Add to Grocery List"}
                   </button>
                   {/* --- End Add to Cart Button --- */}
                 </div>
