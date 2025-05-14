@@ -2,11 +2,12 @@
 import React from 'react';
 
 // Accept toggleChecked prop
-const GroceryCart = ({ cartValue, cartItems, incrementQuantity, decrementQuantity, removeItem, toggleChecked }) => {
+const GroceryCart = ({ cartValue,weekTotal, cartItems, incrementQuantity, decrementQuantity, removeItem, toggleChecked }) => {
 
   return (
       <div>
               <h2>Total: ${cartValue.toFixed(2)}</h2>
+              <h3>Remaining Weekly Spending ${weekTotal.toFixed(2)}</h3>
 
         {cartItems.length === 0 ? (
           <p>Your cart is empty.</p>
