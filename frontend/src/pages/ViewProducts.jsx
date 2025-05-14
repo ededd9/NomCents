@@ -577,7 +577,7 @@ function ViewProducts() {
               onClick={() => searchProducts(1)}
               disabled={isLoading}
             >
-              Search
+              🔎
             </button>
 
             <div className="zip-input">
