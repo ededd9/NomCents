@@ -1,38 +1,119 @@
-import React from 'react';
+import React from "react";
 
 // Accept groceryList and addToGroceryList as props
-const FavoritesList = ({ favoritesList, groceryList, removeFromFavorites, addToGroceryList }) => {
-
+const FavoritesList = ({
+  favoritesList,
+  groceryList,
+  removeFromFavorites,
+  addToGroceryList,
+}) => {
   return (
-    <div>
+    <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
       {favoritesList.length === 0 ? (
         <p>You haven't favorited any items yet.</p>
       ) : (
-        <ul>
+        <ul style={{ listStyleType: "none", padding: 0 }}>
           {favoritesList.map((product) => {
             // Check if the current favorite item is already in the grocery list
-            const isInCart = groceryList.some(cartItem => cartItem.fdcId === product.fdcId);
+            const isInCart = groceryList.some(
+              (cartItem) => cartItem.fdcId === product.fdcId
+            );
 
             return (
-              <li key={product.fdcId} style={{ borderBottom: "1px solid #ccc", marginBottom: "10px", paddingBottom: "10px", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
+              <li
+                key={product.fdcId}
+                style={{
+                  border: "1px solid #888",
+                  borderRadius: "4px",
+                  marginBottom: "15px",
+                  padding: "20px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    textAlign: "left",
+                  }}
+                >
                   {/* Ensure product.name or product.description is available */}
-                  <h3>{product.name || product.description}</h3>
-                  <p>Brand: {product.brandOwner || product.brandName || 'N/A'}</p>
-                  <p>FDC ID: {product.fdcId}</p>
+                  <h3
+                    style={{
+                      margin: "0 0 5px 0",
+                      textAlign: "left",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {product.name || product.description}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "5px 0",
+                      textAlign: "left",
+                    }}
+                  >
+                    <strong>Brand:</strong>{" "}
+                    {product.brandOwner || product.brandName || "N/A"}
+                  </p>
+                  <p
+                    style={{
+                      margin: "5px 0",
+                      textAlign: "left",
+                    }}
+                  >
+                    <strong>Price:</strong>{" "}
+                    {product.price === "n/a"
+                      ? "Not available"
+                      : `$${product.price}`}
+                  </p>
+                  <p
+                    style={{
+                      margin: "5px 0",
+                      textAlign: "left",
+                    }}
+                  >
+                    <strong>FDC ID:</strong> {product.fdcId}
+                  </p>
                   {/* Add more product details if needed */}
                 </div>
-                <div>
-                  <button onClick={() => removeFromFavorites(product.fdcId)} style={{ color: "red", marginRight: '10px' }}>
+                <div
+                  style={{
+                    marginLeft: "30px",
+                    display: "flex",
+                    gap: "10px",
+                  }}
+                >
+                  <button
+                    onClick={() => removeFromFavorites(product.fdcId)}
+                    style={{
+                      color: "white",
+                      padding: "8px 12px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      backgroundColor: "#000000d7",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     Remove from Favorites
                   </button>
                   {/* --- Add to Cart Button --- */}
                   <button
                     onClick={() => addToGroceryList(product)}
                     disabled={isInCart} // Disable button if item is already in the cart
-                    style={{ backgroundColor: isInCart ? 'grey' : 'green' }} // Visual feedback
+                    style={{
+                      backgroundColor: isInCart ? "#000000d7" : "#000000d7", // Visual feedback
+                      color: isInCart ? "white" : "white",
+                      padding: "8px 12px",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: isInCart ? "default" : "pointer",
+                      whiteSpace: "nowrap",
+                    }}
                   >
-                    {isInCart ? 'In Cart' : 'Add to Cart'}
+                    {isInCart ? "In Grocery List" : "Add to Grocery List"}
                   </button>
                   {/* --- End Add to Cart Button --- */}
                 </div>

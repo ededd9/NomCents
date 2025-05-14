@@ -435,406 +435,438 @@ function ViewProducts() {
     setSelectedProduct(null);
     setShowProductDetails(false);
   };
-  
+
   const calculateNutritionScore = (product) => {
-    
     let dvA = 0;
     let dvC = 0;
     Object.entries(product.nutrition.vitamins || {}).forEach(([key, value]) => {
       console.log(key, value);
       if (key.includes("Vitamin A")) {
         console.log("Vitamin A value:", value);
-        dvA = value/2700;
+        dvA = value / 2700;
       }
-      
+
       if (key.includes("Vitamin C")) {
         console.log("Vitamin C value:", value);
-        dvC = value/90;
+        dvC = value / 90;
       }
-      
     });
-    console.log(dvA); 
-    console.log(dvC); 
+    console.log(dvA);
+    console.log(dvC);
     console.log(product.nutrition);
     console.log(product);
-    let score = 0.710 - (0.0538 * product.nutrition.fat)- (0.423 * product.nutrition.saturatedfat) - (0.00398 * product.nutrition.cholesterol) - (0.00254 * product.nutrition.sodium) - (0.0300 * product.nutrition.carbohydrates) + (0.561 * product.nutrition.fiber) - (0.0245 * product.nutrition.sugars) + (0.123 * product.nutrition.protein) + (0.00562 * dvA) + (0.0137 * dvC) + (0.0685 * (product.nutrition.calcium / 1300)) - (0.0186 * (product.nutrition.iron / 18));
+    let score =
+      0.71 -
+      0.0538 * product.nutrition.fat -
+      0.423 * product.nutrition.saturatedfat -
+      0.00398 * product.nutrition.cholesterol -
+      0.00254 * product.nutrition.sodium -
+      0.03 * product.nutrition.carbohydrates +
+      0.561 * product.nutrition.fiber -
+      0.0245 * product.nutrition.sugars +
+      0.123 * product.nutrition.protein +
+      0.00562 * dvA +
+      0.0137 * dvC +
+      0.0685 * (product.nutrition.calcium / 1300) -
+      0.0186 * (product.nutrition.iron / 18);
     return score;
   };
 
   return (
     <div className="ViewProducts">
-      <h1>NomCents</h1>
+      {/* Top section with filters and search controls */}
+      <div className="top-section">
+        {/* Filter sidebar */}
+        <div className="filter-sidebar">
+          <div className="filter-section">
+            <h3>Filters</h3>
+            <label className="price-filter">
+              <input
+                type="checkbox"
+                checked={showOnlyPriced}
+                onChange={(e) => setShowOnlyPriced(e.target.checked)}
+              />
+              Show Priced Products Only
+            </label>
 
-      <div className="search-filters">
-        {/* Search Inputs */}
-        <input
-          type="text"
-          placeholder="Search for a product..."
-          value={product}
-          onChange={(e) => setProduct(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && searchProducts(1)}
-        />
-        <button onClick={() => searchProducts(1)} disabled={isLoading}>
-          Search
-        </button>
+            <div className="sort-filters">
+              <label htmlFor="sortBy">Sort By</label>
+              <select
+                id="sortBy"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="dataType.keyword">Data Type</option>
+                <option value="lowercaseDescription.keyword">
+                  Description
+                </option>
+                <option value="fdcId">FDC ID</option>
+                <option value="brandOwner.keyword">Brand Owner</option>
+                <option value="publishedDate">Published Date</option>
+              </select>
 
-        {/* Filters */}
-        <fieldset>
-          <legend>Data Type</legend>
-          <label>
-            <input
-              type="checkbox"
-              value="Branded"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("Branded")}
-            />{" "}
-            Branded
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Foundation"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("Foundation")}
-            />{" "}
-            Foundation
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Survey (FNDDS)"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("Survey (FNDDS)")}
-            />{" "}
-            Survey (FNDDS)
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="SR Legacy"
-              onChange={handleDataTypeChange}
-              checked={dataType.includes("SR Legacy")}
-            />{" "}
-            SR Legacy
-          </label>
-        </fieldset>
+              <label htmlFor="sortOrder">Sort Order</label>
+              <select
+                id="sortOrder"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div>
 
-        <label htmlFor="sortBy">Sort By</label>
-        <select
-          id="sortBy"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="dataType.keyword">Data Type</option>
-          <option value="lowercaseDescription.keyword">Description</option>
-          <option value="fdcId">FDC ID</option>
-          <option value="brandOwner.keyword">Brand Owner</option>
-          <option value="publishedDate">Published Date</option>
-        </select>
-
-        <label htmlFor="sortOrder">Sort Order</label>
-        <select
-          id="sortOrder"
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-
-        <label htmlFor="brandOwner">Brand Owner</label>
-        <input
-          type="text"
-          id="brandOwner"
-          placeholder="Enter brand owner (optional)..."
-          value={brandOwner}
-          onChange={(e) => setBrandOwner(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && searchProducts(1)}
-        />
-
-        <label>
-          <input
-            type="checkbox"
-            checked={showOnlyPriced}
-            onChange={(e) => setShowOnlyPriced(e.target.checked)}
-          />
-          Show Priced Products Only
-        </label>
-
-        <div className="zip-and-store">
-          <label htmlFor="zipCode">Enter Zip Code:</label>
-          <input
-            type="text"
-            id="zipCode"
-            placeholder="Enter your zip code..."
-            value={displayedZipCode} // Bind to displayedZipCode
-            onChange={(e) => {
-              const value = e.target.value;
-              if (/^\d*$/.test(value)) {
-                // Allow only numeric input
-                setDisplayedZipCode(value); // Update displayedZipCode as the user types
-                if (value.length === 5) {
-                  setZipCode(value); // Update zipCode only when input is exactly 5 digits
-                }
-              }
-            }}
-            maxLength={5} // Limit input to 5 characters
-          />
-
-          <label htmlFor="storeSelect">Select Store:</label>
-          <Select
-            id="storeSelect"
-            options={storeOptions}
-            value={selectedStore}
-            onChange={(selectedOption) => setSelectedStore(selectedOption)}
-            placeholder="Select a store..."
-            isSearchable
-            className="react-select"
-            classNamePrefix="react-select"
-          />
+            <div className="data-type-filters">
+              <h4>Data Type</h4>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Branded"
+                  onChange={handleDataTypeChange}
+                  checked={dataType.includes("Branded")}
+                />{" "}
+                Branded
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Foundation"
+                  onChange={handleDataTypeChange}
+                  checked={dataType.includes("Foundation")}
+                />{" "}
+                Foundation
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Survey (FNDDS)"
+                  onChange={handleDataTypeChange}
+                  checked={dataType.includes("Survey (FNDDS)")}
+                />{" "}
+                Survey (FNDDS)
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="SR Legacy"
+                  onChange={handleDataTypeChange}
+                  checked={dataType.includes("SR Legacy")}
+                />{" "}
+                SR Legacy
+              </label>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <h2>Search Results</h2>
-        {isLoading && currentPage === 1 ? <p>Loading results...</p> : null}
-        {results.length === 0 && !isLoading ? <p>No products found.</p> : null}
-        <div className="search-results">
-          {" "}
-          {/* Changed from ul to div for card layout */}
-          {results.map((product) => {
-            const inGroceryList = groceryList.find(
-              (item) => item.fdcId === product.fdcId
-            );
-            const isFavorite = favoritesList.some(
-              // <-- Check if product is favorite (KEEP)
-              (item) => item.fdcId === product.fdcId
-            );
-            return (
-              <div key={product.fdcId}>
-                <div
-                  className="product-card"
-                  onClick={() => viewProductDetails(product)} // Open product details popup on click
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>{product.name}</h3>
-                  <p>
-                    Price at Krogers:{" "}
-                    {product.price != "n/a"
-                      ? `$${product.price}`
-                      : product.price}
-                  </p>
-                  <p>Brand Owner: {product.brandOwner}</p>
-                  <p>Brand Name: {product.brandName}</p>
-                  <p>Ingredients: {product.ingredients}</p>
-                  <p>
-                    <ul>
-                      {product.foodNutrients
-                        ? product.foodNutrients.map((nutrient) => (
+        {/* Search controls and results container */}
+        <div className="search-controls-container">
+          {/* Search controls row */}
+          <div className="search-controls-row">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search for a product..."
+                value={product}
+                onChange={(e) => setProduct(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && searchProducts(1)}
+              />
+            </div>
+
+            <button
+              className="search-button"
+              onClick={() => searchProducts(1)}
+              disabled={isLoading}
+            >
+              Search
+            </button>
+
+            <div className="zip-input">
+              <input
+                type="text"
+                placeholder="Zip code"
+                value={displayedZipCode}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setDisplayedZipCode(value);
+                    if (value.length === 5) {
+                      setZipCode(value);
+                    }
+                  }
+                }}
+                maxLength={5}
+              />
+            </div>
+
+            <div className="store-dropdown">
+              <Select
+                options={storeOptions}
+                value={selectedStore}
+                onChange={(selectedOption) => setSelectedStore(selectedOption)}
+                placeholder="Select store"
+                isSearchable
+                className="react-select"
+                classNamePrefix="react-select"
+              />
+            </div>
+          </div>
+
+          {/* Search results */}
+          <div className="search-results-container">
+            <h2>Search Results</h2>
+            {isLoading && currentPage === 1 ? <p>Loading results...</p> : null}
+            {results.length === 0 && !isLoading ? (
+              <p>No products found.</p>
+            ) : null}
+
+            <div className="search-results">
+              {results.map((product) => {
+                const inGroceryList = groceryList.find(
+                  (item) => item.fdcId === product.fdcId
+                );
+                const isFavorite = favoritesList.some(
+                  (item) => item.fdcId === product.fdcId
+                );
+
+                return (
+                  <div key={product.fdcId} className="product-card">
+                    <div
+                      className="product-card-content"
+                      onClick={() => viewProductDetails(product)}
+                    >
+                      <h3>
+                        {product.name ||
+                          product.description ||
+                          "No Product Name Available"}
+                      </h3>
+                      <p>
+                        Price at Krogers:{" "}
+                        {product.price != "n/a"
+                          ? `$${product.price}`
+                          : product.price}
+                      </p>
+                      <p>Brand Owner: {product.brandOwner}</p>
+                      <p>Brand Name: {product.brandName}</p>
+                      <p>Ingredients: {product.ingredients}</p>
+
+                      {product.foodNutrients && (
+                        <ul className="nutrition-list">
+                          {product.foodNutrients.slice(0, 3).map((nutrient) => (
                             <li key={nutrient.nutrientId}>
                               {nutrient.nutrientName}: {nutrient.value}
                             </li>
-                          ))
-                        : "None"}
-                    </ul>
-                  </p>
-                  {inGroceryList ? (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          decrementQuantity(product);
-                        }}
-                      >
-                        -
-                      </button>
-                      <span>{inGroceryList.quantity}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          incrementQuantity(product);
-                        }}
-                      >
-                        +
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFromGroceryList(product);
-                        }}
-                      >
-                        Remove from Grocery List
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToGroceryList(product);
-                      }}
-                    >
-                      Add to Grocery List
-                    </button>
-                  )}
-                  {isFavorite ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromFavorites(product);
-                      }}
-                    >
-                      Remove from Favorites
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToFavorites(product);
-                      }}
-                    >
-                      Add to Favorites
-                    </button>
-                  )}
-                  {isLoggedIn && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openLogModal(product);
-                      }}
-                    >
-                      Log Food
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
 
-        {showPopup && (
-          <Popup
-            message={popupMessage}
-            closePopup={handleClosePopup}
-            showLoginButton={showLoginButton}
-          />
-        )}
-        {/* Load More Button */}
-        {results.length > 0 && currentPage < totalPages && (
-          <button
-            onClick={loadMoreProducts}
-            disabled={isLoading}
-            style={{ marginTop: "20px" }}
-          >
-            {" "}
-            {/* Added margin top */}
-            {isLoading ? "Loading..." : "Load More"}
-          </button>
-        )}
+                    <div className="product-card-buttons">
+                      {inGroceryList ? (
+                        <div className="quantity-controls">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              decrementQuantity(product);
+                            }}
+                          >
+                            -
+                          </button>
+                          <span>{inGroceryList.quantity}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              incrementQuantity(product);
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {inGroceryList ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromGroceryList(product);
+                          }}
+                        >
+                          Remove from List
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToGroceryList(product);
+                          }}
+                        >
+                          Add to List
+                        </button>
+                      )}
+
+                      {isFavorite ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromFavorites(product);
+                          }}
+                        >
+                          Remove Favorite
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToFavorites(product);
+                          }}
+                        >
+                          Add Favorite
+                        </button>
+                      )}
+
+                      {isLoggedIn && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openLogModal(product);
+                          }}
+                        >
+                          Log Food
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {results.length > 0 && currentPage < totalPages && (
+              <button
+                onClick={loadMoreProducts}
+                disabled={isLoading}
+                className="load-more"
+              >
+                {isLoading ? "Loading..." : "Load More"}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Product Details Popup */}
       {showProductDetails && selectedProduct && (
-        <Popup
-          message={
-            <div>
-              <h1>{selectedProduct.name}</h1>
-              <p>Brand: {selectedProduct.brandName}</p>
-              <p>Brand Owner: {selectedProduct.brandOwner}</p>
-              <p>Ingredients: {selectedProduct.ingredients}</p>
-              <p>Package weight/Total amount {selectedProduct.packageSize}</p>
-              <h2>Nutrition Per Serving</h2>
-              <ul>
-                <li>Serving size: {selectedProduct.servingsize}, {selectedProduct.servingSizeUnit} </li>
-                <li>Calories: {(selectedProduct.nutrition.calories / selectedProduct.servingsize).toFixed(2)}</li>
-                <li>Protein: {(selectedProduct.nutrition.protein / selectedProduct.servingsize).toFixed(2)}</li>
-                <li>Fat: {(selectedProduct.nutrition.fat / selectedProduct.servingsize).toFixed(2)}</li> 
-                <li>Carbohydrates: {(selectedProduct.nutrition.carbohydrates / selectedProduct.servingsize).toFixed(2)}</li>
-                <li>Sugars: {(selectedProduct.nutrition.sugars / selectedProduct.servingsize).toFixed(2)}</li> 
-                <li>Fiber: {(selectedProduct.nutrition.fiber / selectedProduct.servingsize).toFixed(2)}</li>
-                <li>Cholesterol: {(selectedProduct.nutrition.cholesterol / selectedProduct.servingsize).toFixed(2)}</li>
-                <li>Nutrition score: {(calculateNutritionScore(selectedProduct) / selectedProduct.servingsize).toFixed(2)}</li>
-              </ul>
-              <h2>Vitamins and Minerals</h2>
-              <ul>
-                {Object.entries(selectedProduct.nutrition.vitamins || {}).map(
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h1>{selectedProduct.name}</h1>
+            <p>Brand: {selectedProduct.brandName || "N/A"}</p>
+            <p>Brand Owner: {selectedProduct.brandOwner || "N/A"}</p>
+            <p>Ingredients: {selectedProduct.ingredients || "N/A"}</p>
+            <p>Package Size: {selectedProduct.packageSize || "N/A"}</p>
+
+            <h2>Nutrition Per Serving</h2>
+            <ul>
+              <li>
+                Serving size: {selectedProduct.servingsize}{" "}
+                {selectedProduct.servingSizeUnit}
+              </li>
+              <li>
+                Calories:{" "}
+                {selectedProduct.nutrition?.calories?.toFixed(2) || "N/A"}
+              </li>
+              <li>
+                Protein:{" "}
+                {selectedProduct.nutrition?.protein?.toFixed(2) || "N/A"}g
+              </li>
+              <li>
+                Fat: {selectedProduct.nutrition?.fat?.toFixed(2) || "N/A"}g
+              </li>
+              <li>
+                Carbs:{" "}
+                {selectedProduct.nutrition?.carbohydrates?.toFixed(2) || "N/A"}g
+              </li>
+              <li>
+                Sugars: {selectedProduct.nutrition?.sugars?.toFixed(2) || "N/A"}
+                g
+              </li>
+              <li>
+                Fiber: {selectedProduct.nutrition?.fiber?.toFixed(2) || "N/A"}g
+              </li>
+              <li>
+                Nutrition Score:{" "}
+                {calculateNutritionScore(selectedProduct)?.toFixed(2) || "N/A"}
+              </li>
+            </ul>
+
+            <h2>Vitamins and Minerals</h2>
+            <ul>
+              {selectedProduct.nutrition?.vitamins ? (
+                Object.entries(selectedProduct.nutrition.vitamins).map(
                   ([key, value]) => (
                     <li key={key}>
                       {key}: {value}
                     </li>
                   )
-                )}
-              </ul>
+                )
+              ) : (
+                <li>No vitamin data available</li>
+              )}
+            </ul>
 
-              {showPriceComparison && (
-                <div style={{ marginTop: "20px" }}>
-                  <h2>Price Comparison</h2>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Store Location</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {priceComparisonData.map((price) => {
-                        const isSelectedStore =
-                          price.locationId === selectedStore?.value; // Check if this is the selected store
-                        return (
-                          <tr key={price.locationId}>
-                            <td>
-                              {storeOptions.find(
-                                (store) => store.value === price.locationId
-                              )?.label || "Unknown Store"}
-                            </td>
-                            <td>
-                              {price.price !== "n/a"
-                                ? `$${price.price}`
-                                : "Not Available"}
-                              {isSelectedStore && (
-                                <span
-                                  style={{
-                                    color: "blue",
-                                    fontWeight: "bold",
-                                    marginLeft: "5px",
-                                  }}
-                                >
-                                  {" ← currently selected store"}
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              {selectedStore && (
-                <button
-                  onClick={fetchPriceComparison}
-                  style={{ marginTop: "10px" }}
-                >
-                  {showPriceComparison
-                    ? "Hide Price Comparison"
-                    : "Compare Prices with Other Nearby Stores"}
-                </button>
-              )}
-              <button onClick={closeProductDetails}>Close</button>
-            </div>
-          }
-          closePopup={closeProductDetails}
-          showLoginButton={false}
-          popupType="product-details"
-        />
+            {showPriceComparison && (
+              <div className="price-comparison">
+                <h2>Price Comparison</h2>
+                <table className="price-comparison-table">
+                  <thead>
+                    <tr>
+                      <th>Store</th>
+                      <th>Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {priceComparisonData.map((price) => {
+                      const store = storeOptions.find(
+                        (s) => s.value === price.locationId
+                      );
+                      return (
+                        <tr key={price.locationId}>
+                          <td>{store?.label || "Unknown Store"}</td>
+                          <td>
+                            {price.price !== "n/a" ? `$${price.price}` : "N/A"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {selectedStore && (
+              <button onClick={fetchPriceComparison}>
+                {showPriceComparison ? "Hide Prices" : "Compare Prices"}
+              </button>
+            )}
+
+            <button onClick={closeProductDetails}>Close</button>
+          </div>
+        </div>
       )}
+
+      {/* General Popup */}
       {showPopup && (
-        <Popup
-          message={popupMessage}
-          closePopup={handleClosePopup}
-          showLoginButton={showLoginButton}
-        />
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <p>{popupMessage}</p>
+            {showLoginButton && (
+              <button onClick={() => (window.location.href = "/login")}>
+                Go to Login
+              </button>
+            )}
+            <button onClick={handleClosePopup}>Close</button>
+          </div>
+        </div>
       )}
 
+      {/* Food Log Modal */}
       {showLogModal && selectedProduct && (
         <FoodLogModal
           product={selectedProduct}

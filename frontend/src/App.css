@@ -46,17 +46,17 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  background: #ffffff;
-  color: rgb(0, 0, 0);
+  width: 100vw; /* Full viewport width */
+  background-color: white; /* Prevents transparency when scrolling */
+  border-bottom: 1px solid gray;
   padding: 10px 40px;
   z-index: 1000;
-  transition: top 0.3s;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
 }
+
 .right-nav {
   display: flex;
   align-items: center;
@@ -81,4 +81,8 @@
 
 body:hover .NavBar {
   top: 0;
+}
+
+.page-wrapper {
+  padding-top: 80px; /* or 70px, match navbar height */
 }
