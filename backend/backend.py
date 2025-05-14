@@ -722,23 +722,7 @@ async def search_product():
                             elif "cholesterol" in nutrient_name:
                                 product_info["nutrition"]["cholesterol"] = nutrient_value
                             elif "fiber" in nutrient_name:
-<<<<<<< HEAD
                                 product_info["nutrition"]["fiber"] = nutrient_value
-=======
-                                food_info["nutrition"]["fiber"] = nutrient_value
-                            elif "saturated fat" in nutrient_name:
-                                food_info["nutrition"]["saturatedfat"] = nutrient_value
-                            elif "sodium" in nutrient_name:
-                                food_info["nutrition"]["sodium"] = nutrient_value
-                            elif "iron" in nutrient_name:
-                                food_info["nutrition"]["iron"] = nutrient_value
-                            elif "calcium" in nutrient_name:
-                                food_info["nutrition"]["calcium"] = nutrient_value
-                            elif "cholesterol" in nutrient_name:
-                                food_info["nutrition"]["cholesterol"] = nutrient_value
-                            elif "fiber" in nutrient_name:
-                                food_info["nutrition"]["fiber"] = nutrient_value
->>>>>>> 62800f063a003eed5f9cf8273de4cafa9f4618b0
                         priority_results.append(product_info)
                     else:
                         lower_priority_results.append(product_info)
@@ -912,25 +896,7 @@ async def search_product():
                         elif "fiber" in nutrient_name:
                             product_info["nutrition"]["fiber"] = nutrient_value
                         elif "servingSize" in nutrient_name:
-<<<<<<< HEAD
                             product_info["nutrition"]["size"] = nutrient_value
-=======
-                            food_info["nutrition"]["size"] = nutrient_value
-                        elif "saturated" in nutrient_name:
-                            food_info["nutrition"]["saturatedfat"] = nutrient_value
-                        elif "sodium" in nutrient_name:
-                            food_info["nutrition"]["sodium"] = nutrient_value
-                        elif "iron" in nutrient_name:
-                            food_info["nutrition"]["iron"] = nutrient_value
-                        elif "calcium" in nutrient_name:
-                            food_info["nutrition"]["calcium"] = nutrient_value
-                        elif "cholesterol" in nutrient_name:
-                            food_info["nutrition"]["cholesterol"] = nutrient_value
-                        elif "fiber" in nutrient_name:
-                            food_info["nutrition"]["fiber"] = nutrient_value
-                        elif "servingSize" in nutrient_name:
-                            food_info["nutrition"]["size"] = nutrient_value
->>>>>>> 62800f063a003eed5f9cf8273de4cafa9f4618b0
                
                 # add each product to results list
                 results.append(product_info)
