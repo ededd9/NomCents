@@ -645,17 +645,17 @@ async def search_product():
                                 vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
                                 product_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
                             elif "saturated fat" in nutrient_name:
-                                food_info["nutrition"]["saturatedfat"] = nutrient_value
+                                product_info["nutrition"]["saturatedfat"] = nutrient_value
                             elif "sodium" in nutrient_name:
-                                food_info["nutrition"]["sodium"] = nutrient_value
+                                product_info["nutrition"]["sodium"] = nutrient_value
                             elif "iron" in nutrient_name:
-                                food_info["nutrition"]["iron"] = nutrient_value
+                                product_info["nutrition"]["iron"] = nutrient_value
                             elif "calcium" in nutrient_name:
-                                food_info["nutrition"]["calcium"] = nutrient_value
+                                product_info["nutrition"]["calcium"] = nutrient_value
                             elif "cholesterol" in nutrient_name:
-                                food_info["nutrition"]["cholesterol"] = nutrient_value
+                                product_info["nutrition"]["cholesterol"] = nutrient_value
                             elif "fiber" in nutrient_name:
-                                food_info["nutrition"]["fiber"] = nutrient_value
+                                product_info["nutrition"]["fiber"] = nutrient_value
                         priority_results.append(product_info)
                     else:
                         lower_priority_results.append(product_info)
@@ -763,7 +763,7 @@ async def search_product():
                 # get image url using google search api
                 # image_url = get_product_image(name, brand)
        
-                food_info = {
+                product_info = {
                     "fdcId": food.get("fdcId"),
                     # Add barcode for matching prices to products
                     "gtinUpc": food.get("gtinUpc", "N/A"),
@@ -800,35 +800,35 @@ async def search_product():
                         nutrient_value = nutrient.get("value", "N/A")
                        
                         if "energy" in nutrient_name:
-                            food_info["nutrition"]["calories"] = nutrient_value
+                            product_info["nutrition"]["calories"] = nutrient_value
                         elif "protein" in nutrient_name:
-                            food_info["nutrition"]["protein"] = nutrient_value
+                            product_info["nutrition"]["protein"] = nutrient_value
                         elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
-                            food_info["nutrition"]["fat"] = nutrient_value
+                            product_info["nutrition"]["fat"] = nutrient_value
                         elif "carbohydrate" in nutrient_name:
-                            food_info["nutrition"]["carbohydrates"] = nutrient_value
+                            product_info["nutrition"]["carbohydrates"] = nutrient_value
                         elif "sugars" in nutrient_name:
-                            food_info["nutrition"]["sugars"] = nutrient_value
+                            product_info["nutrition"]["sugars"] = nutrient_value
                         elif "vitamin" in nutrient_name:
                             vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
-                            food_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
+                            product_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
                         elif "saturated" in nutrient_name:
-                            food_info["nutrition"]["saturatedfat"] = nutrient_value
+                            product_info["nutrition"]["saturatedfat"] = nutrient_value
                         elif "sodium" in nutrient_name:
-                            food_info["nutrition"]["sodium"] = nutrient_value
+                            product_info["nutrition"]["sodium"] = nutrient_value
                         elif "iron" in nutrient_name:
-                            food_info["nutrition"]["iron"] = nutrient_value
+                            product_info["nutrition"]["iron"] = nutrient_value
                         elif "calcium" in nutrient_name:
-                            food_info["nutrition"]["calcium"] = nutrient_value
+                            product_info["nutrition"]["calcium"] = nutrient_value
                         elif "cholesterol" in nutrient_name:
-                            food_info["nutrition"]["cholesterol"] = nutrient_value
+                            product_info["nutrition"]["cholesterol"] = nutrient_value
                         elif "fiber" in nutrient_name:
-                            food_info["nutrition"]["fiber"] = nutrient_value
+                            product_info["nutrition"]["fiber"] = nutrient_value
                         elif "servingSize" in nutrient_name:
-                            food_info["nutrition"]["size"] = nutrient_value
+                            product_info["nutrition"]["size"] = nutrient_value
                
                 # add each product to results list
-                results.append(food_info)
+                results.append(product_info)
                
                 if len(results) >= page_size:
                     break
