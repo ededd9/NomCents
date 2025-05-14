@@ -3,15 +3,17 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  min-width: 1400px;
   margin: 0 auto;
+  max-width: 100%; /* Ensure it doesn't exceed the screen width */
+  box-sizing: border-box; /* Include padding and border in width calculations */
 }
 
 /* Top section with filters and search controls */
 .top-section {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 30px;
+  display: flex;
+  align-items: flex-start; /* Align items to the top */
+  justify-content: flex-start; /* Align everything to the left */
+  gap: 20px; /* Space between filters and search section */
   margin-bottom: 20px;
 }
 
@@ -22,6 +24,8 @@
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   height: fit-content;
+  width: 250px; /* Fixed width for the filters */
+  flex-shrink: 0; /* Prevent it from shrinking */
 }
 
 /* Search controls container */
@@ -29,34 +33,54 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex: 1; /* Allow it to take up remaining space */
+  max-width: 800px; /* Optional: Set a maximum width */
 }
 
 /* Search controls row */
 .search-controls-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: center;
-  justify-content: space-between;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  gap: 10px; /* Space between elements */
+  align-items: center; /* Vertically align items */
+  justify-content: flex-start; /* Align everything to the left */
+  max-width: 100%; /* Prevent it from exceeding the container width */
+  box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+/* Ensure all elements in the row have the same height */
+.search-controls-row > * {
+  flex: 0 0 auto; /* Prevent elements from growing or shrinking */
+  height: 38px; /* Ensure consistent height */
+  display: flex; /* Align content properly */
+  align-items: center; /* Vertically center content */
+  box-sizing: border-box; /* Include padding and border in height calculations */
 }
 
 .search-bar,
 .zip-input,
 .store-dropdown,
 .search-button {
-  flex: 1 1 auto;
-  min-width: 200px;
+  min-height: 38px;
+  max-width: 100%; /* Prevent items from exceeding the container width */
   color: #000000d7;
   border-radius: 20px;
 }
 
 .search-controls-row .search-bar input,
-.search-controls-row .zip-input input {
+.search-controls-row .zip-input input,
+.search-controls-row .search-button,
+.search-controls-row .store-dropdown .react-select__control {
+  flex: 0 0 auto; /* Prevent resizing */
+  height: 38px; /* Ensure consistent height */
+}
+
+.search-controls-row .search-bar input {
   width: 100%;
-  padding: 10px 15px;
+  padding: 8px 12px; /* Reduce padding */
   border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 0.95rem;
+  border-radius: 20px;
+  font-size: 0.9rem; /* Slightly smaller font size */
   height: 100%;
   box-sizing: border-box;
   background-color: white;
@@ -64,15 +88,28 @@
   border-radius: 20px;
 }
 
+.search-controls-row .zip-input input {
+  width: 10ch; /* Enough space for 5 characters plus a little padding */
+  padding: 10.5px 12px; /* Add padding for better appearance */
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  text-align: center; /* Center-align the text for better UX */
+  box-sizing: border-box; /* Include padding in width calculations */
+  background-color: white;
+  color: black;
+}
+
 .search-controls-row .search-button {
+  width: auto;
   border-radius: 20px;
-  padding: 0 20px;
+  padding: 5px 8px; /* Reduce padding */
   background: white;
   color: black;
   border: none;
   cursor: pointer;
-  font-size: 0.95rem;
-  height: 40px;
+  font-size: 0.9rem; /* Slightly smaller font size */
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,8 +213,8 @@ React Select customization .search-controls-row .react-select__control {
 
 .search-results {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Narrower cards */
+  gap: 20px; /* Space between cards */
 }
 
 /* Product Card Styles */
@@ -366,7 +403,7 @@ React Select customization .search-controls-row .react-select__control {
 .price-comparison-table th {
   background-color: #f2f2f2;
 }
-/* 
+ 
 @media (max-width: 992px) {
   .top-section {
     grid-template-columns: 1fr;
@@ -374,6 +411,10 @@ React Select customization .search-controls-row .react-select__control {
 
   .search-results-container {
     grid-column: 1;
+  }
+
+  .search-results {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Smaller cards */
   }
 }
 
@@ -392,4 +433,27 @@ React Select customization .search-controls-row .react-select__control {
   .search-results {
     grid-template-columns: 1fr;
   }
-} */
+}
+
+@media (max-width: 576px) {
+  .filter-sidebar {
+    padding: 10px; /* Reduce padding for smaller screens */
+  }
+
+  .product-card {
+    min-height: 250px; /* Adjust card height */
+    max-height: 350px;
+  }
+
+  .search-controls-row {
+    gap: 10px; /* Reduce spacing */
+  }
+}
+
+.search-controls-row .store-dropdown .react-select__control {
+  width: 400px; /* Increase the width of the dropdown */
+  min-height: 38px; /* Ensure consistent height */
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  box-sizing: border-box;
+}
