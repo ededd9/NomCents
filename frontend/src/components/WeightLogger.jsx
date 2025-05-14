@@ -4,7 +4,7 @@ import { LoginContext } from '../contexts/LoginContext';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
-const WeightLogger = ({ onWeightLogged, userProfile }) => {
+const WeightLogger = ({ onWeightLogged, userProfile, selectedDate }) => {
     const { user, isLoggedIn } = useContext(LoginContext);
     const [currentWeight, setCurrentWeight] = useState('');
     const [logStatus, setLogStatus] = useState('');
@@ -23,7 +23,11 @@ const WeightLogger = ({ onWeightLogged, userProfile }) => {
             const response = await fetch(`${BACKEND_API_URL}/user/weight_log`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: user.email, weight: currentWeight })
+                body: JSON.stringify({
+                    email: user.email,
+                    weight: currentWeight,
+                    date: selectedDate
+                }),
             });
             const result = await response.json();
 

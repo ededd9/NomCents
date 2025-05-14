@@ -133,14 +133,27 @@ def get_kroger_token():
     data = {"grant_type": "client_credentials", "scope": "product.compact"}
     res = requests.post("https://api-ce.kroger.com/v1/connect/oauth2/token", headers=headers, data=data)
     res_json = res.json()
-
+    print("Status code:", res.status_code)
+    print("Response text:", res.text)
     token_cache["access_token"] = res_json["access_token"]
     token_cache["expires_at"] = now + res_json["expires_in"]
 
     print("Token: ", token_cache["access_token"], flush=True)
     return jsonify({"token": token_cache["access_token"]})
 
+@app.route('/api/usercartvalue', methods=['GET'])
 
+def usercartvalue():
+    email=request.args['email']
+    usstring=('{"email":"'+ email+'"}')
+    user=data.userLookup(usstring)
+    sum=0
+    for i in user['groceryList']:
+        if 'price' in i.keys():
+            sum+=i['price']*i['quantity']
+    print("sum is ", sum)
+    return jsonify({"cartValue": round(sum,2)})
+    
 # get takes ?email= and the other two methods take json for the user as teh user variable
 @app.route('/api/user', methods=['GET', 'POST', 'PUT'])
 def user():
@@ -151,11 +164,13 @@ def user():
         usstring=('{"email":"'+ email+'"}')
 
         user=data.userLookup(usstring)
+        
         if(not (user is None)):
             user['_id'] = str(user['_id'])
             return jsonify(user)
         else:
             abort(404)
+       
     elif request.method== 'POST':
         udat=request.get_json()
         if data.makeUser(udat):
@@ -622,6 +637,18 @@ async def search_product():
                             "calcium": 0, 
                             "fiber": 0,
                             "cholesterol": 0, 
+                            "calories": 0,
+                            "protein": 0,
+                            "fat": 0,
+                            "carbohydrates": 0,
+                            "sugars": 0,
+                            "vitamins": {},
+                            "saturatedfat": 0,
+                            "sodium": 0, 
+                            "iron": 0, 
+                            "calcium": 0, 
+                            "fiber": 0,
+                            "cholesterol": 0, 
                         }
                     })
                     
@@ -655,7 +682,23 @@ async def search_product():
                             elif "cholesterol" in nutrient_name:
                                 product_info["nutrition"]["cholesterol"] = nutrient_value
                             elif "fiber" in nutrient_name:
+<<<<<<< HEAD
                                 product_info["nutrition"]["fiber"] = nutrient_value
+=======
+                                food_info["nutrition"]["fiber"] = nutrient_value
+                            elif "saturated fat" in nutrient_name:
+                                food_info["nutrition"]["saturatedfat"] = nutrient_value
+                            elif "sodium" in nutrient_name:
+                                food_info["nutrition"]["sodium"] = nutrient_value
+                            elif "iron" in nutrient_name:
+                                food_info["nutrition"]["iron"] = nutrient_value
+                            elif "calcium" in nutrient_name:
+                                food_info["nutrition"]["calcium"] = nutrient_value
+                            elif "cholesterol" in nutrient_name:
+                                food_info["nutrition"]["cholesterol"] = nutrient_value
+                            elif "fiber" in nutrient_name:
+                                food_info["nutrition"]["fiber"] = nutrient_value
+>>>>>>> 62800f063a003eed5f9cf8273de4cafa9f4618b0
                         priority_results.append(product_info)
                     else:
                         lower_priority_results.append(product_info)
@@ -776,6 +819,10 @@ async def search_product():
                     "servingSizeUnit": food.get("servingSizeUnit","Unknown"),
                     "householdserving": food.get("householdServingFullText","Unknown"),
                     "packageSize": food.get("packageWeight","Unknown"),
+                    "servingsize": food.get("servingSize","Unknown"),
+                    "servingSizeUnit": food.get("servingSizeUnit","Unknown"),
+                    "householdserving": food.get("householdServingFullText","Unknown"),
+                    "packageSize": food.get("packageWeight","Unknown"),
                     "nutrition": {
                         "calories": 0,
                         "protein": 0,
@@ -788,7 +835,7 @@ async def search_product():
                         "iron": 0, 
                         "calcium": 0, 
                         "fiber": 0,
-                        "cholesterol": 0, 
+                        "cholesterol": 0 
                     }
                 }
                
@@ -825,7 +872,25 @@ async def search_product():
                         elif "fiber" in nutrient_name:
                             product_info["nutrition"]["fiber"] = nutrient_value
                         elif "servingSize" in nutrient_name:
+<<<<<<< HEAD
                             product_info["nutrition"]["size"] = nutrient_value
+=======
+                            food_info["nutrition"]["size"] = nutrient_value
+                        elif "saturated" in nutrient_name:
+                            food_info["nutrition"]["saturatedfat"] = nutrient_value
+                        elif "sodium" in nutrient_name:
+                            food_info["nutrition"]["sodium"] = nutrient_value
+                        elif "iron" in nutrient_name:
+                            food_info["nutrition"]["iron"] = nutrient_value
+                        elif "calcium" in nutrient_name:
+                            food_info["nutrition"]["calcium"] = nutrient_value
+                        elif "cholesterol" in nutrient_name:
+                            food_info["nutrition"]["cholesterol"] = nutrient_value
+                        elif "fiber" in nutrient_name:
+                            food_info["nutrition"]["fiber"] = nutrient_value
+                        elif "servingSize" in nutrient_name:
+                            food_info["nutrition"]["size"] = nutrient_value
+>>>>>>> 62800f063a003eed5f9cf8273de4cafa9f4618b0
                
                 # add each product to results list
                 results.append(product_info)
@@ -906,103 +971,119 @@ def price_comparison():
 
 FOOD_LOG = 'food_intake'  # new mongoDB collection for food storage logs. note: initializes the first time it is inserted into
 
-
-@app.route("/api/log_food", methods=["GET", "POST", "DELETE"])
+@app.route("/api/log_food", methods=["POST"])
 def log_food():
     # connect to 'food_log' collection in mongodb
     food_collection = data.atlas_client.get_collection(FOOD_LOG)
     
     if request.method == 'POST':
-        # get food intake data from frontend
-        log_data = request.get_json()
-        # adding logs for debugging
-        # print("data from frontend:", log_data)
-        
-        # food logging fields
-        required_fields = ['email', 'fdcId', 'productName', 'servingSize', 'mealType', 'timestamp']
-            
-        # if returned dictionary in log_data does not contain all of the required fields
-        if not all(field in log_data for field in required_fields):
-            return jsonify({"message": "missing some required field :("}), 400
-        
-        # extract the date from timestamp
         try:
-            # Replace 'Z' with '+00:00' for compatibility with datetime.fromisoformat
-            timestamp = log_data["timestamp"]
-            if timestamp.endswith("Z"):
-                timestamp = timestamp.replace("Z", "+00:00")
+            # get food intake data from frontend
+            log_data = request.get_json()
+            # adding logs for debugging
+            # print("data from frontend:", log_data)
             
-            # Parse the timestamp and extract the date
-            log_date = datetime.fromisoformat(timestamp).date().isoformat()
-            # print("log_date:", log_date)  # Debug log
-        except Exception as e:
-            print("problem parsing timestamp:", str(e))
-            return jsonify({"message": "invalid timestamp format"}), 400
-        
-        # set vars for JSON to insert into mongoDB appropriately
-        meal_type = log_data["mealType"].lower()
-        email = log_data["email"]
-        
-        # make sure a document exists for the user
-        food_collection.update_one(
-            {"email": email},
-            {"$setOnInsert": {"email": email, "logs": {}, "dailyTotals": {}}},
-            upsert=True
-        )
-        # print("Document ensured.")  # Debug log
-
-        # create nested structure for the date
-        food_collection.update_one(
-            {"email": email, f"logs.{log_date}": {"$exists": False}},
-            {"$set": {f"logs.{log_date}": {"meals": {}}}}
-        )
-        # print(f"Date structure ensured for {log_date}.")  # Debug log
-
-        # meal type array structure
-        food_collection.update_one(
-            {"email": email, f"logs.{log_date}.meals.{meal_type}": {"$exists": False}},
-            {"$set": {f"logs.{log_date}.meals.{meal_type}": []}}
-        )
-        # print(f"Meal type structure ensured for {meal_type}.")  # Debug log
-        
-        try:
-            # push log into the correct meal type array
+            # food logging fields
+            required_fields = ['email', 'fdcId', 'productName', 'servingAmount', 'servingUnit', 'mealType', 'timestamp', 'nutrition']
+                
+            # if returned dictionary in log_data does not contain all of the required fields
+            if not all(field in log_data for field in required_fields):
+                return jsonify({"message": "missing some required field :("}), 400
+            
+            # extract the date from timestamp
+            try:
+                log_date = datetime.fromisoformat(log_data["timestamp"].replace("Z", "+00:00")).date().isoformat()
+            except Exception as e:
+                print("problem parsing timestamp:", str(e))
+                return jsonify({"message": "invalid timestamp format"}), 400
+            
+            # set vars for JSON to insert into mongoDB appropriately
+            nutrition = log_data.get("nutrition", {}) # get nutritional data from log_data 
+            meal_type = log_data["mealType"].lower()
+            email = log_data["email"]
+            
+            
+            # make sure a document exists for the user
+            food_collection.update_one(
+                {"email": email},
+                {"$setOnInsert": {"email": email, "logs": {}}},
+                upsert=True
+            )
+            
+            # current user document
+            user_doc = food_collection.find_one({"email": email})
+            
+            # add meals and daily totals within the log for specific day
+            if not user_doc.get("logs", {}).get(log_date):
+                food_collection.update_one(
+                    {"email": email, f"logs.{log_date}": {"$exists": False}},
+                    {"$set": {f"logs.{log_date}": {"meals": {}, "dailyTotals": {}}}},
+                    upsert=True
+                )
+            
+            # add meal type array for that specific day
+            if meal_type not in user_doc.get("logs", {}).get(log_date, {}).get("meals", {}):
+                food_collection.update_one(
+                    {"email": email, f"logs.{log_date}.meals.{meal_type}": {"$exists": False}},
+                    {"$set": {f"logs.{log_date}.meals.{meal_type}": []}},
+                    upsert=True
+                )
+            
+            # add food entry to correct meal type array
             food_collection.update_one(
                 {"email": email},
                 {"$push": {f"logs.{log_date}.meals.{meal_type}": log_data}}
             )
-            # print("Log pushed into meal type array.")  # Debug log
             
-            # get nutritional data from log_data 
-            nutrition = log_data.get("nutrition", {})
-            # print("Nutrition data:", nutrition)  # Debug log
-        
-            # update daily totals for calories if nutrition data exists
-            if nutrition:
+            # OK UP TO HERE. code starts to add duplicate emails in backend
+            # if nutrition:
+                # inc_fields = {}
+            if nutrition: 
                 inc_fields = {}
                 for key, value in nutrition.items():
+                    if value is None:
+                        continue # skip null values, was causing float error w/ None types
                     try:
                         numeric_value = float(value)
-                        inc_fields[f"dailyTotals.{key}"] = numeric_value
+                        inc_fields[f"logs.{log_date}.dailyTotals.{key}"] = numeric_value
                     except Exception:
-                        # print(f"Skipping invalid nutrition value for {key}: {value}.")  # Debug log
-                        pass
-                if inc_fields:
-                    food_collection.update_one(
-                        {"email": email},
-                        {"$inc": inc_fields}
-                    )
-                    # print("Daily totals updated.")  # Debug log
-            
-            # Retrieve and print the updated document for debugging
-            updated_document = food_collection.find_one({"email": email})
-            print("Updated document:", updated_document, flush=True)        
-                    
+                        print(f"Skipping invalid value for {key}: {value}")
+            if inc_fields:
+                food_collection.update_one(
+                    {"email": email},
+                    {"$inc": inc_fields}
+                )
+                
             return jsonify({"message": "food log added successfully :)"}), 200
+    
         except Exception as e:
-            print("POST error:", str(e))
-            # traceback.print_exc()  # Uncomment for detailed error traceback during debugging
-            return jsonify({"message": "error logging food"}), 500
+            print("SERVER ERROR in log_food:", str(e))
+            import traceback
+            traceback.print_exc()
+            return jsonify({"message": "Server error while logging food."}), 500
+
+@app.route("/api/food_logs", methods=["GET"])
+def get_food_logs():
+    email = request.args.get("email")
+    date = request.args.get("date")  # Optional date parameter
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    food_collection = data.atlas_client.get_collection("food_intake")
+    user_doc = food_collection.find_one({"email": email}, {"_id": 0, "logs": 1})
+
+    if not user_doc:
+        return jsonify({"logs": {}})  # Return empty logs if no data exists
+
+    # If a date is provided, fetch logs for that specific date
+    if date:
+        logs_for_date = user_doc.get("logs", {}).get(date, {}).get("meals", {})
+        return jsonify({"logs": logs_for_date}), 200
+
+    # If no date is provided, return all logs
+    all_logs = user_doc.get("logs", {})
+    return jsonify({"logs": all_logs}), 200
         
 # --- MODIFIED WEIGHT LOG ROUTES ---
 # These routes assume the global 'data' object (instance of datauser)
@@ -1013,9 +1094,7 @@ def add_weight_log_route():
     log_data = request.get_json() # Using 'log_data' 
     email = log_data.get('email')
     weight_str = log_data.get('weight')
-    
-    # Use current date as YYYY-MM-DD for the log key
-    log_date_iso = datetime.now().date().isoformat()
+    log_date = log_data.get('date')  # Optional date parameter
 
     if not email or weight_str is None:
         return jsonify({"message": "Email and weight are required"}), 400
@@ -1042,15 +1121,19 @@ def add_weight_log_route():
             },
             upsert=True # Create the user document in FOOD_LOG if it doesn't exist
         )
+        
+        # Default to today's date if no date provided
+        if not log_date:
+            log_date = datetime.now().date().isoformat()
 
         # Now, set the weight for the specific date.
         # when we $set a field within it (like `logs.<date_str>.weight`).
         food_collection.update_one(
             {"email": email},
-            {"$set": {f"logs.{log_date_iso}.weight": weight_val}}
+            {"$set": {f"logs.{log_date}.weight": weight_val}}
         )
 
-        print(f"Updated/Inserted weight for {email} on {log_date_iso}: {weight_val}", flush=True)
+        print(f"Updated/Inserted weight for {email} on {log_date}: {weight_val}", flush=True)
         return jsonify({"message": "Weight logged successfully"}), 200
 
     except ValueError:
@@ -1062,8 +1145,10 @@ def add_weight_log_route():
         return jsonify({"message": "Internal server error logging weight"}), 500
 
 @app.route('/api/user/weight_history', methods=['GET'])
-def get_weight_history_route(): # Retaining original function name
+def get_weight_history_route(): 
     email = request.args.get('email')
+    date = request.args.get('date')  # Optional date parameter
+
     if not email:
         return jsonify({"message": "Email query parameter is required"}), 400
 
@@ -1077,6 +1162,16 @@ def get_weight_history_route(): # Retaining original function name
         if not user_document or "logs" not in user_document:
             return jsonify({"labels": [], "data": []}), 200
 
+        # If a date is provided, fetch weight log for that specific date
+        if date:
+            daily_data = user_document["logs"].get(date, {})
+            weight = daily_data.get("weight")
+            if weight is not None:
+                return jsonify({"labels": [date], "data": [weight]}), 200
+            else:
+                return jsonify({"labels": [], "data": []}), 200
+
+        # If no date is provided, fetch all weight logs
         weight_entries = []
         # Iterate through the dates (keys) in the user_document['logs'] object
         for date_str, daily_data in user_document["logs"].items(): 
@@ -1090,7 +1185,6 @@ def get_weight_history_route(): # Retaining original function name
                     # This handles cases where a key in 'logs' might not be a valid date string
                     print(f"Warning: Invalid date format '{date_str}' found in logs for user {email}. Skipping.")
 
-
         if not weight_entries:
             return jsonify({"labels": [], "data": []}), 200
 
@@ -1101,7 +1195,7 @@ def get_weight_history_route(): # Retaining original function name
                 return datetime.strptime(entry['date'], '%Y-%m-%d')
             except ValueError:
                 # Should not happen if we validated above, but as a fallback
-                return datetime.min # Or handle error appropriately
+                return datetime.min  # Or handle error appropriately
 
         sorted_weight_entries = sorted(weight_entries, key=get_date_for_sort)
         
@@ -1114,7 +1208,7 @@ def get_weight_history_route(): # Retaining original function name
         import traceback
         traceback.print_exc()
         return jsonify({"message": "Internal server error fetching weight history"}), 500
-    
+
 @app.route('/api/user/weight_log', methods=['DELETE'])
 def delete_last_weight_log_entry_route(): # Retaining original function name
     email = request.args.get('email')
@@ -1169,5 +1263,144 @@ def delete_last_weight_log_entry_route(): # Retaining original function name
         traceback.print_exc()
         return jsonify({"message": "Internal server error deleting weight entry"}), 500
     
+    
+'''Functions for spending logging'''
+
+@app.route('/api/user/spending_log', methods=['POST'])
+def add_spending_log():
+    log_data = request.get_json()
+    print("data from frontend:", log_data, flush=True)
+    email = log_data.get('email')
+    amount = log_data.get('amount')
+    description = log_data.get('description', '')  # Optional description
+    log_date = log_data.get('date')  # Optional date
+
+    if not email or not amount:
+        return jsonify({"message": "Email and amount are required"}), 400
+
+    if not data.isUser(json.dumps({"email": email})):
+        return jsonify({"message": "User not found"}), 404
+
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            return jsonify({"message": "Invalid spending amount"}), 400
+
+        food_collection = data.atlas_client.get_collection(FOOD_LOG)
+
+        # Ensure the user's document exists
+        food_collection.update_one(
+            {"email": email},
+            {"$setOnInsert": {"email": email, "logs": {}, "dailyTotals": {}}},
+            upsert=True
+        )
+
+        # Use the provided date or default to today's date
+        if not log_date:
+            log_date = datetime.now().date().isoformat()
+
+        # Create the spending entry
+        spending_entry = {
+            "amount": amount,
+            "description": description
+        }
+
+        # Push the spending entry into the array for the specific date
+        food_collection.update_one(
+            {"email": email},
+            {"$push": {f"logs.{log_date}.spending": spending_entry}}
+        )
+
+        # Calculate the daily total for the date
+        user_document = food_collection.find_one({"email": email})
+        daily_logs = user_document.get("logs", {}).get(log_date, {}).get("spending", [])
+        daily_total = sum(log.get("amount", 0) for log in daily_logs)
+
+        # Update the daily total for the date
+        food_collection.update_one(
+            {"email": email},
+            {"$set": {f"logs.{log_date}.dailyTotals.spending": daily_total}}
+        )
+
+        print(f"Added spending log for {email} on {log_date}: {spending_entry}", flush=True)
+        print(f"Updated daily total for {log_date}: {daily_total}", flush=True)
+        return jsonify({"message": "Spending logged successfully"}), 200
+
+    except ValueError:
+        return jsonify({"message": "Invalid amount format, must be a number"}), 400
+    except Exception as e:
+        print(f"Error in add_spending_log: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"message": "Internal server error logging spending"}), 500
+
+@app.route('/api/user/spending_logs', methods=['GET'])
+def get_spending_logs():
+    email = request.args.get('email')
+    date = request.args.get('date')  # Optional date parameter
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    # Check if the user exists
+    if not data.isUser(json.dumps({"email": email})):
+        return jsonify({"message": "User not found"}), 404
+
+    try:
+        food_collection = data.atlas_client.get_collection(FOOD_LOG)
+        user_document = food_collection.find_one({"email": email})
+
+        if not user_document or "logs" not in user_document:
+            return jsonify({"logs": []}), 200
+
+        # If a date is provided, fetch spending logs for that specific date
+        if date:
+            spending_logs = user_document["logs"].get(date, {}).get("spending", [])
+            return jsonify({"logs": spending_logs}), 200
+
+        # If no date is provided, fetch all spending logs
+        all_spending_logs = {}
+        for log_date, log_data in user_document["logs"].items():
+            if "spending" in log_data:
+                all_spending_logs[log_date] = log_data["spending"]
+
+        return jsonify({"logs": all_spending_logs}), 200
+
+    except Exception as e:
+        print(f"Error in get_spending_logs: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"message": "Internal server error fetching spending logs"}), 500
+
+@app.route('/api/user/spending_log', methods=['DELETE'])
+def delete_spending_log():
+    email = request.args.get('email')
+    timestamp = request.args.get('timestamp')  # Exact timestamp of the log to delete
+    date = request.args.get('date')  # Date of the log (YYYY-MM-DD)
+
+    if not email or not timestamp or not date:
+        return jsonify({"message": "Email, date, and timestamp are required"}), 400
+
+    if not data.isUser(json.dumps({"email": email})):
+        return jsonify({"message": "User not found"}), 404
+
+    try:
+        spending_collection = data.atlas_client.get_collection(FOOD_LOG)
+        result = spending_collection.update_one(
+            {"email": email},
+            {"$pull": {f"spendingLogs.{date}": {"timestamp": timestamp}}}
+        )
+
+        if result.modified_count == 1:
+            return jsonify({"message": "Spending log deleted successfully"}), 200
+        else:
+            return jsonify({"message": "Spending log not found"}), 404
+
+    except Exception as e:
+        print(f"Error in delete_spending_log: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"message": "Internal server error deleting spending log"}), 500
+ 
 if __name__ == '__main__':
     app.run(debug=True)
