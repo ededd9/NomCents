@@ -13,3 +13,8 @@
     width: 100%; /* Ensure it spans the full width of the page */
     box-sizing: border-box; /* Include padding and border in width calculations */
   }
+
+  .Favorites-title {
+    text-align: left; 
+    padding-left: 20px;
+  }
