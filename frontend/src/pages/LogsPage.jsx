@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import WeightLogger from '../components/WeightLogger';
 import SpendingLogger from '../components/SpendingLogger';
 import { LoginContext } from '../contexts/LoginContext';
+import './LogsPage.css';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -81,7 +82,7 @@ const LogsPage = () => {
     }
 
     return (
-        <div style={{ padding: '20px' }}>
+        <div className='LogsPage' style={{ padding: '20px' }}>
             <h2>Logs Page</h2>
 
             {/* Date Selector */}
