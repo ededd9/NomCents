@@ -1,7 +1,9 @@
+/* Ensure the root container spans the full width without overflow */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%; /* Use 100% to avoid including the scrollbar width */
+  max-width: none; /* Remove any max-width constraint */
+  margin: 0; /* Remove centering */
+  padding: 0; /* Remove extra padding */
   text-align: center;
 }
 
@@ -83,6 +85,13 @@ body:hover .NavBar {
   top: 0;
 }
 
+/* Ensure the page-wrapper spans the full width without overflow */
 .page-wrapper {
-  padding-top: 80px; /* or 70px, match navbar height */
+  min-height: calc(100vh - 80px); /* Full viewport height minus navbar height */
+  margin-top: 62.5px; /* Push content below the navbar */
+  width: 100%; /* Use 100% to avoid horizontal scrolling */
+  display: flex; /* Use flexbox for layout */
+  flex-direction: column; /* Stack content vertically */
+  box-sizing: border-box; /* Include padding in width and height calculations */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }

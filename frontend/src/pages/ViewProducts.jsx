@@ -851,19 +851,104 @@ function ViewProducts() {
         </div>
       )}
 
-      {/* General Popup */}
+      {/* Product Details Popup */}
+      {showProductDetails && selectedProduct && (
+        <Popup
+          message={
+            <div>
+              <h1>{selectedProduct.name}</h1>
+              <p>Brand: {selectedProduct.brandName}</p>
+              <p>Brand Owner: {selectedProduct.brandOwner}</p>
+              <p>Ingredients: {selectedProduct.ingredients}</p>
+              <h2>Nutrition</h2>
+              <ul>
+                <li>Calories: {selectedProduct.nutrition.calories}</li>
+                <li>Protein: {selectedProduct.nutrition.protein}</li>
+                <li>Fat: {selectedProduct.nutrition.fat}</li>
+                <li>
+                  Carbohydrates: {selectedProduct.nutrition.carbohydrates}
+                </li>
+                <li>Sugars: {selectedProduct.nutrition.sugars}</li>
+                <li>Fiber: {selectedProduct.nutrition.fiber}</li>
+              </ul>
+              <h2>Vitamins and Minerals</h2>
+              <ul>
+                {Object.entries(selectedProduct.nutrition.vitamins || {}).map(
+                  ([key, value]) => (
+                    <li key={key}>
+                      {key}: {value}
+                    </li>
+                  )
+                )}
+              </ul>
+              {showPriceComparison && (
+                <div style={{ marginTop: "20px" }}>
+                  <h2>Price Comparison</h2>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Store Location</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {priceComparisonData.map((price) => {
+                        const isSelectedStore =
+                          price.locationId === selectedStore?.value; // Check if this is the selected store
+                        return (
+                          <tr key={price.locationId}>
+                            <td>
+                              {storeOptions.find(
+                                (store) => store.value === price.locationId
+                              )?.label || "Unknown Store"}
+                            </td>
+                            <td>
+                              {price.price !== "n/a"
+                                ? `$${price.price}`
+                                : "Not Available"}
+                              {isSelectedStore && (
+                                <span
+                                  style={{
+                                    color: "blue",
+                                    fontWeight: "bold",
+                                    marginLeft: "5px",
+                                  }}
+                                >
+                                  {" ← currently selected store"}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {selectedStore && (
+                <button
+                  onClick={fetchPriceComparison}
+                  style={{ marginTop: "10px" }}
+                >
+                  {showPriceComparison
+                    ? "Hide Price Comparison"
+                    : "Compare Prices with Other Nearby Stores"}
+                </button>
+              )}
+              <button onClick={closeProductDetails}>Close</button>
+            </div>
+          }
+          closePopup={closeProductDetails}
+          showLoginButton={false}
+          popupType="product-details"
+        />
+      )}
       {showPopup && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <p>{popupMessage}</p>
-            {showLoginButton && (
-              <button onClick={() => (window.location.href = "/login")}>
-                Go to Login
-              </button>
-            )}
-            <button onClick={handleClosePopup}>Close</button>
-          </div>
-        </div>
+        <Popup
+          message={popupMessage}
+          closePopup={handleClosePopup}
+          showLoginButton={showLoginButton}
+        />
       )}
 
       {/* Food Log Modal */}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { LoginContext } from '../contexts/LoginContext';
 import WeightProgressChart from '../components/WeightProgressChart';
-import WeightLogger from '../components/WeightLogger';
 import SpendingProgressChart from '../components/SpendingProgressChart';
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
