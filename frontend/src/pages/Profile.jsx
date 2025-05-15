@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import PopUp from "../components/PopUp";
+import "./Profile.css";
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
