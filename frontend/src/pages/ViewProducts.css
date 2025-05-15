@@ -1,10 +1,16 @@
 /* Main container styles */
 .ViewProducts {
+  background-image: url('../assets/NomCents_ProductsPageBG.png');
+  background-size: cover; /* Ensure the image covers the entire page */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent the image from repeating */
+  background-attachment: fixed; /* Make the background stationary */
+  min-height: 100vh; /* Ensure it covers the full viewport height */
   display: flex;
   flex-direction: column;
   padding: 20px;
   margin: 0 auto;
-  max-width: 100%; /* Ensure it doesn't exceed the screen width */
+  width: 100%; /* Ensure it spans the full width of the page */
   box-sizing: border-box; /* Include padding and border in width calculations */
 }
 
