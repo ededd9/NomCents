@@ -72,7 +72,7 @@ const GroceryCart = ({ cartValue,weekTotal, cartItems, incrementQuantity, decrem
                         onClick={() => removeItem(product.fdcId)}
                         style={{ marginLeft: "10px", color: "white", flexShrink: 0, background:"black" }} // Prevent shrinking
                     >
-                        Remove From Grocery Lart
+                        Remove From Grocery List
                     </button>
                      {/* --- End Remove Button --- */}
                 </li>
