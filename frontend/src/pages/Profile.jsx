@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import PopUp from "../components/PopUp";
-
+import "./Profile.css";
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 const Profile = () => {
@@ -206,11 +206,11 @@ const Profile = () => {
 
       {/* BMR Calculation Form Section */}
       <div className="bmr-calculation-form">
-        <h2>BMR Calculation</h2>
+        <h2>Calculate BMR </h2>
         <div>
           <label>Units: 
             <select value={units} onChange={handleUnitsChange}>
-              <option value=""> Select</option>
+              <option value=""> Units </option>
               <option value="standard"> Standard</option>
               <option value="metric"> Metric</option>
             </select>
@@ -220,7 +220,7 @@ const Profile = () => {
         <div>
           <label>Gender: 
             <select value={gender} onChange={handleGenderChange}>
-              <option value=""> Select</option>
+              <option value=""> Gender </option>
               <option value="male"> Male</option>
               <option value="female"> Female</option>
             </select>
@@ -292,7 +292,7 @@ const Profile = () => {
         <div>
           <label>Goals: 
             <select value={goal} onChange={handleGoalChange}>
-              <option value=""> Select</option>
+              <option value=""> Goal </option>
               <option value="0"> Maintain weight</option>
               <option value="-1"> Lose one pound a week</option>
               <option value="-2"> Lose two pounds a week</option>
@@ -305,7 +305,7 @@ const Profile = () => {
         <div>
           <label>Activity Level: 
             <select value={activity} onChange={handleActivityChange}>
-              <option value=""> Select</option>
+              <option value=""> Activity Level </option>
               <option value="1.2"> Sedentary (little to no exercise + work a desk job)</option>
               <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
               <option value="1.55"> Moderately active(moderate exercise 3-5 days/week) </option>
@@ -330,7 +330,7 @@ const Profile = () => {
 
       {/* Current Calculations Section */}
       <div className="current-calculations">
-        <h2>Current Calculations</h2>
+        <h2>Your Current Calculations</h2>
         {isLoggedIn ? (
           <>
             <h3>Your Profile</h3> 
@@ -347,7 +347,7 @@ const Profile = () => {
         ) : (
           <>
             <p>Daily Calories: {dailyCal}</p>
-            <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
+            <p>Daily Calories for Goal: {((dailyCal * activity) + (500 * goal)).toFixed(2)}</p>
           </>
         )}
       </div>
