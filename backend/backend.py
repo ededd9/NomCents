@@ -1090,6 +1090,80 @@ def get_food_logs():
     # If no date is provided, return all logs
     all_logs = user_doc.get("logs", {})
     return jsonify({"logs": all_logs}), 200
+
+@app.route("/api/food_logs/delete", methods=["DELETE"])
+def delete_food_log_entry():
+    try:
+        data_in = request.get_json()
+        email = data_in.get("email")
+        date = data_in.get("date")
+        meal = data_in.get("meal")
+        index = data_in.get("index")
+
+        # if one field is missing, can't delete the food
+        if not all([email, date, meal]) or index is None:
+            return jsonify({"message": "Missing email, date, meal, or index"}), 400
+
+        food_collection = data.atlas_client.get_collection(FOOD_LOG)
+        user_doc = food_collection.find_one({"email": email})
+
+        # user doesn't exist
+        if not user_doc:
+            return jsonify({"message": "User not found"}), 404
+
+        # trying to delete a food from an index doesn't exist
+        meals = user_doc.get("logs", {}).get(date, {}).get("meals", {}).get(meal, [])
+        if index < 0 or index >= len(meals):
+            return jsonify({"message": "Invalid food index"}), 400
+
+
+        food_to_remove = meals[index]
+        nutrition = food_to_remove.get("nutrition", {})
+
+        # subtract the nutrition values from dailyTotals
+        dec_fields = {}
+        for key, value in nutrition.items():
+            try:
+                dec_fields[f"logs.{date}.dailyTotals.{key}"] = -float(value)
+            except (TypeError, ValueError):
+                continue  # skip invalid or missing values
+
+        # delete item and decrement nutrition info
+        result = food_collection.update_one(
+            {"email": email},
+            {
+                "$unset": {f"logs.{date}.meals.{meal}.{index}": 1},  # mark for removal
+                "$inc": dec_fields if dec_fields else {},
+            }
+        )
+        
+        # clean up none objects within the array
+        food_collection.update_one(
+            {"email": email},
+            {
+                "$pull": {f"logs.{date}.meals.{meal}": None}
+            }
+        )
+        
+        # check if the meal array is empty
+        updated_doc = food_collection.find_one({"email": email})
+        updated_meals = updated_doc.get("logs", {}).get(date, {}).get("meals", {})
+
+        # remove meal if empty
+        if meal in updated_meals and not updated_meals[meal]:
+            food_collection.update_one(
+                {"email": email},
+                { "$unset": { f"logs.{date}.meals.{meal}": "" } }
+            )
+
+        return jsonify({"message": "Food log deleted"}), 200
+
+    except Exception as e:
+        print("Error in delete_food_log_entry:", str(e))
+        import traceback
+        traceback.print_exc()
+        return jsonify({"message": "Server error deleting food log"}), 500
+
         
 # --- MODIFIED WEIGHT LOG ROUTES ---
 # These routes assume the global 'data' object (instance of datauser)
