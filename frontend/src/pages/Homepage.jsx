@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'; // Import useContext
 import { LoginContext } from '../contexts/LoginContext'; // Import LoginContext
+import './Homepage.css'; // Import CSS for styling
 
 const Homepage = () => {
   const { isLoggedIn, user } = useContext(LoginContext); // Get login status and user info
