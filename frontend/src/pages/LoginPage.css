@@ -1,0 +1,89 @@
+/* LoginPage.css */
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+.login-pg-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.login-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-group {
+  display: flex; /* Place label and input on the same line */
+  align-items: center; /* Vertically align label and input */
+  justify-content: space-between; /* Add spacing between label and input */
+  margin-bottom: 15px;
+}
+
+.form-label {
+  font-weight: bold;
+  margin-right: 10px; /* Add spacing between label and input */
+  flex: 0 0 30%; /* Set label width */
+}
+
+.form-input {
+  width: 70%; /* Reduce input width */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.form-submit-btn {
+  display: block; /* Ensure the button behaves like a block element */
+  margin-left: auto; /* Push the button to the right */
+  padding: 10px 20px; /* Adjust padding for better appearance */
+  background-color: #000000d7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.form-submit-btn:hover {
+  background-color: #333;
+}
+
+.toggle-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: transparent;
+  color: #000;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.toggle-btn:hover {
+  background-color: #000000d7;
+  color: white;
+}
+
+.or-divider {
+  margin: 20px 0;
+  font-size: 1rem;
+  color: #666;
+}
+
+.google-login-container {
+  margin-top: 20px;
+}

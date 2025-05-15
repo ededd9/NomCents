@@ -143,7 +143,7 @@ const FavoritesPage = () => {
 
   return (
     <div className="FavoritesPage"> 
-      <h1 style={{textAlign:"left"}}>Favorites </h1>
+      <h1 className="Favorites-title">Favorites </h1>
       {isLoading ? (
         <p>Loading favorites...</p>
       ) : !isLoggedIn ? (

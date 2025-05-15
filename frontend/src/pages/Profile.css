@@ -9,8 +9,9 @@
     flex-shrink:0;
 }
 .bmr-calculation-form select{
-    border-radius:10px;
+    border-radius: 5px;
     padding: 5px;
+    margin-left: 5px;
     margin-block: 1% 1%;
     width:auto;
     color: black;
@@ -18,7 +19,10 @@
     background-color: white;
 }
 .bmr-calculation-form input{
-    border-radius:10px;
+    width: 5ch;
+    border-radius: 5px;
+    border-width: 1px;
+    margin-left: 5px;
     padding: 1%;
     margin-block: 1% 1%;
     color: black;
@@ -35,6 +39,7 @@
     color: black;
     overflow-y:auto;
     flex-shrink:0;
+    border-radius: 20px;
 }
 .current-calculations h2 {
   margin: 0 0 8px;
@@ -53,5 +58,16 @@
     padding: 20px;
     margin: 0 auto;
     width: 100%; /* Ensure it spans the full width of the page */
+    box-sizing: border-box; /* Include padding and border in width calculations */
+  }
+
+  .profile-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px; /* Set a maximum width for the container */
+    margin: 0 auto; /* Center the container */
+    padding: 20px; /* Add some padding */
     box-sizing: border-box; /* Include padding and border in width calculations */
   }

@@ -6,6 +6,8 @@ import { jwtDecode } from "jwt-decode";
 
 import Popup from "../components/PopUp";
 
+import "./LoginPage.css";
+
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
 const LoginPage = () => {
@@ -148,14 +150,15 @@ const LoginPage = () => {
   };
 
   return (
-    <div>
-      <h1>{isRegistering ? "Register" : "Login"}</h1>
+    <div className="login-page">
+      <h1 className="login-pg-title">{isRegistering ? "Register" : "Login"}</h1>
 
-      <form onSubmit={handleEmailAuth}>
+      <form className="login-form" onSubmit={handleEmailAuth}>
         {isRegistering && (
-          <div>
-            <label>Name:</label>
+          <div className="form-group">
+            <label className="form-label">Name:</label>
             <input
+              className="form-input"
               type="text"
               name="name"
               value={loginData.name}
@@ -165,9 +168,10 @@ const LoginPage = () => {
           </div>
         )}
 
-        <div>
-          <label>Email:</label>
+        <div className="form-group">
+          <label className="form-label">Email:</label>
           <input
+            className="form-input"
             type="email"
             name="email"
             value={loginData.email}
@@ -176,9 +180,10 @@ const LoginPage = () => {
           />
         </div>
 
-        <div>
-          <label>Password:</label>
+        <div className="form-group">
+          <label className="form-label">Password:</label>
           <input
+            className="form-input"
             type="password"
             name="password"
             value={loginData.password}
@@ -188,20 +193,27 @@ const LoginPage = () => {
           />
         </div>
 
-        <button type="submit">{isRegistering ? "Register" : "Login"}</button>
+        <button className="form-submit-btn" type="submit">
+          {isRegistering ? "Register" : "Login"}
+        </button>
       </form>
 
-      <button onClick={() => setIsRegistering(!isRegistering)}>
+      <button
+        className="toggle-btn"
+        onClick={() => setIsRegistering(!isRegistering)}
+      >
         {isRegistering ? "Login" : "Register"}
       </button>
 
-      <div>Or</div>
+      <div className="or-divider">Or</div>
 
-      <GoogleLogin
-        onSuccess={(credentialResponse) => {
-          handleSuccess(credentialResponse);
-        }}
-      />
+      <div className="google-login-container">
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            handleSuccess(credentialResponse);
+          }}
+        />
+      </div>
 
       {showPopup && (
         <Popup

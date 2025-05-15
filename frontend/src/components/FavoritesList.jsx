@@ -8,11 +8,11 @@ const FavoritesList = ({
   addToGroceryList,
 }) => {
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+    <div style={{ margin: "0 auto", width: "80%" }}>
       {favoritesList.length === 0 ? (
         <p>You haven't favorited any items yet.</p>
       ) : (
-        <ul style={{ listStyleType: "none", padding: 0 }}>
+        <ul style={{ listStyleType: "none", padding: 0, width: "100%" }}>
           {favoritesList.map((product) => {
             // Check if the current favorite item is already in the grocery list
             const isInCart = groceryList.some(
@@ -23,6 +23,7 @@ const FavoritesList = ({
               <li
                 key={product.fdcId}
                 style={{
+                  width: "100%",
                   border: "1px solid #888",
                   borderRadius: "4px",
                   marginBottom: "15px",
@@ -30,6 +31,8 @@ const FavoritesList = ({
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-start",
+                  backgroundColor: "rgba(249, 249, 249, 0.7)",
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                 }}
               >
                 <div
@@ -78,11 +81,13 @@ const FavoritesList = ({
                   </p>
                   {/* Add more product details if needed */}
                 </div>
-                <div
+                <div className="button-container"
                   style={{
                     marginLeft: "30px",
                     display: "flex",
                     gap: "10px",
+                    justifyContent: "flex-end",
+                    alignSelf: "flex-end",
                   }}
                 >
                   <button
