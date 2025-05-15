@@ -15,6 +15,7 @@ import os
 import time
 import aiohttp
 import asyncio
+from dateutil.relativedelta import relativedelta
 from cachetools import TTLCache #testing this
 # Load environment variables from a .env file
 load_dotenv()
@@ -140,6 +141,45 @@ def get_kroger_token():
 
     print("Token: ", token_cache["access_token"], flush=True)
     return jsonify({"token": token_cache["access_token"]})
+
+@app.route('/api/userweektotal', methods=['GET'])
+def get_weekly_spending_total():
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    food_collection = data.atlas_client.get_collection("food_intake")
+    user_document = food_collection.find_one({"email": email}, {"_id": 0, "logs": 1})
+
+    try:
+        if not user_document or "logs" not in user_document:
+            return jsonify({"total": 0.0}), 200
+
+        today = datetime.now().date()
+        week_ago = today - relativedelta(days=6)  # 7 days including today
+
+        total = 0.0
+
+        for log_date, log_data in user_document["logs"].items():
+            try:
+                log_date_obj = datetime.strptime(log_date, '%Y-%m-%d').date()
+                if week_ago <= log_date_obj <= today and "spending" in log_data:
+                    for entry in log_data["spending"]:
+                        total += float(entry.get("amount", 0))
+            except Exception:
+                continue
+        print(f"Total spending for {email} in the last week: {total}")
+        usstring=('{"email":"'+ email+'"}')
+        user=data.userLookup(usstring)
+        print("weekly budget is ", user['weeklyBudget'])
+        return jsonify({"total": round(float(user['weeklyBudget'])-total, 2)}), 200
+
+    except Exception as e:
+        print(f"Error in get_weekly_spending_total: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"message": "Internal server error fetching weekly spending total"}), 500
+
 
 @app.route('/api/usercartvalue', methods=['GET'])
 
@@ -672,29 +712,17 @@ async def search_product():
                                 vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
                                 product_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
                             elif "saturated fat" in nutrient_name:
-                                food_info["nutrition"]["saturatedfat"] = nutrient_value
+                                product_info["nutrition"]["saturatedfat"] = nutrient_value
                             elif "sodium" in nutrient_name:
-                                food_info["nutrition"]["sodium"] = nutrient_value
+                                product_info["nutrition"]["sodium"] = nutrient_value
                             elif "iron" in nutrient_name:
-                                food_info["nutrition"]["iron"] = nutrient_value
+                                product_info["nutrition"]["iron"] = nutrient_value
                             elif "calcium" in nutrient_name:
-                                food_info["nutrition"]["calcium"] = nutrient_value
+                                product_info["nutrition"]["calcium"] = nutrient_value
                             elif "cholesterol" in nutrient_name:
-                                food_info["nutrition"]["cholesterol"] = nutrient_value
+                                product_info["nutrition"]["cholesterol"] = nutrient_value
                             elif "fiber" in nutrient_name:
-                                food_info["nutrition"]["fiber"] = nutrient_value
-                            elif "saturated fat" in nutrient_name:
-                                food_info["nutrition"]["saturatedfat"] = nutrient_value
-                            elif "sodium" in nutrient_name:
-                                food_info["nutrition"]["sodium"] = nutrient_value
-                            elif "iron" in nutrient_name:
-                                food_info["nutrition"]["iron"] = nutrient_value
-                            elif "calcium" in nutrient_name:
-                                food_info["nutrition"]["calcium"] = nutrient_value
-                            elif "cholesterol" in nutrient_name:
-                                food_info["nutrition"]["cholesterol"] = nutrient_value
-                            elif "fiber" in nutrient_name:
-                                food_info["nutrition"]["fiber"] = nutrient_value
+                                product_info["nutrition"]["fiber"] = nutrient_value
                         priority_results.append(product_info)
                     else:
                         lower_priority_results.append(product_info)
@@ -802,7 +830,7 @@ async def search_product():
                 # get image url using google search api
                 # image_url = get_product_image(name, brand)
        
-                food_info = {
+                product_info = {
                     "fdcId": food.get("fdcId"),
                     # Add barcode for matching prices to products
                     "gtinUpc": food.get("gtinUpc", "N/A"),
@@ -843,49 +871,35 @@ async def search_product():
                         nutrient_value = nutrient.get("value", "N/A")
                        
                         if "energy" in nutrient_name:
-                            food_info["nutrition"]["calories"] = nutrient_value
+                            product_info["nutrition"]["calories"] = nutrient_value
                         elif "protein" in nutrient_name:
-                            food_info["nutrition"]["protein"] = nutrient_value
+                            product_info["nutrition"]["protein"] = nutrient_value
                         elif "total lipid" in nutrient_name or "total fat" in nutrient_name:
-                            food_info["nutrition"]["fat"] = nutrient_value
+                            product_info["nutrition"]["fat"] = nutrient_value
                         elif "carbohydrate" in nutrient_name:
-                            food_info["nutrition"]["carbohydrates"] = nutrient_value
+                            product_info["nutrition"]["carbohydrates"] = nutrient_value
                         elif "sugars" in nutrient_name:
-                            food_info["nutrition"]["sugars"] = nutrient_value
+                            product_info["nutrition"]["sugars"] = nutrient_value
                         elif "vitamin" in nutrient_name:
                             vitamin_name = nutrient.get("nutrientName", "Unknown Vitamin")
-                            food_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
+                            product_info["nutrition"]["vitamins"][vitamin_name] = nutrient_value
                         elif "saturated" in nutrient_name:
-                            food_info["nutrition"]["saturatedfat"] = nutrient_value
+                            product_info["nutrition"]["saturatedfat"] = nutrient_value
                         elif "sodium" in nutrient_name:
-                            food_info["nutrition"]["sodium"] = nutrient_value
+                            product_info["nutrition"]["sodium"] = nutrient_value
                         elif "iron" in nutrient_name:
-                            food_info["nutrition"]["iron"] = nutrient_value
+                            product_info["nutrition"]["iron"] = nutrient_value
                         elif "calcium" in nutrient_name:
-                            food_info["nutrition"]["calcium"] = nutrient_value
+                            product_info["nutrition"]["calcium"] = nutrient_value
                         elif "cholesterol" in nutrient_name:
-                            food_info["nutrition"]["cholesterol"] = nutrient_value
+                            product_info["nutrition"]["cholesterol"] = nutrient_value
                         elif "fiber" in nutrient_name:
-                            food_info["nutrition"]["fiber"] = nutrient_value
+                            product_info["nutrition"]["fiber"] = nutrient_value
                         elif "servingSize" in nutrient_name:
-                            food_info["nutrition"]["size"] = nutrient_value
-                        elif "saturated" in nutrient_name:
-                            food_info["nutrition"]["saturatedfat"] = nutrient_value
-                        elif "sodium" in nutrient_name:
-                            food_info["nutrition"]["sodium"] = nutrient_value
-                        elif "iron" in nutrient_name:
-                            food_info["nutrition"]["iron"] = nutrient_value
-                        elif "calcium" in nutrient_name:
-                            food_info["nutrition"]["calcium"] = nutrient_value
-                        elif "cholesterol" in nutrient_name:
-                            food_info["nutrition"]["cholesterol"] = nutrient_value
-                        elif "fiber" in nutrient_name:
-                            food_info["nutrition"]["fiber"] = nutrient_value
-                        elif "servingSize" in nutrient_name:
-                            food_info["nutrition"]["size"] = nutrient_value
+                            product_info["nutrition"]["size"] = nutrient_value
                
                 # add each product to results list
-                results.append(food_info)
+                results.append(product_info)
                
                 if len(results) >= page_size:
                     break

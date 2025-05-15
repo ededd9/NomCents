@@ -63,7 +63,7 @@ function App() {
             </LoginContext.Consumer>
           </div>
         </div>
-        {element}
+        <div className="page-wrapper">{element}</div>
       </div>
     </LoginProvider>
   );

@@ -1,155 +1,465 @@
-.search-results {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-  padding: 16px;
+/* Main container styles */
+.ViewProducts {
+  background-image: url('../assets/NomCents_ProductsPageBG.png');
+  background-size: cover; /* Ensure the image covers the entire page */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent the image from repeating */
+  background-attachment: fixed; /* Make the background stationary */
+  min-height: 100vh; /* Ensure it covers the full viewport height */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  margin: 0 auto;
+  width: 100%; /* Ensure it spans the full width of the page */
+  box-sizing: border-box; /* Include padding and border in width calculations */
 }
 
-.product-card {
-  border: 1px solid #ccc;
+/* Top section with filters and search controls */
+.top-section {
+  display: flex;
+  align-items: flex-start; /* Align items to the top */
+  justify-content: flex-start; /* Align everything to the left */
+  gap: 20px; /* Space between filters and search section */
+  margin-bottom: 20px;
+}
+
+/* Filter sidebar */
+.filter-sidebar {
+  background: white;
   border-radius: 8px;
-  padding: 16px;
-  text-align: center;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  width: 250px; /* Fixed width for the filters */
+  flex-shrink: 0; /* Prevent it from shrinking */
+}
+
+/* Search controls container */
+.search-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1; /* Allow it to take up remaining space */
+  max-width: 800px; /* Optional: Set a maximum width */
+}
+
+/* Search controls row */
+.search-controls-row {
+  display: flex;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  gap: 10px; /* Space between elements */
+  align-items: center; /* Vertically align items */
+  justify-content: flex-start; /* Align everything to the left */
+  max-width: 100%; /* Prevent it from exceeding the container width */
+  box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+/* Ensure all elements in the row have the same height */
+.search-controls-row > * {
+  flex: 0 0 auto; /* Prevent elements from growing or shrinking */
+  height: 38px; /* Ensure consistent height */
+  display: flex; /* Align content properly */
+  align-items: center; /* Vertically center content */
+  box-sizing: border-box; /* Include padding and border in height calculations */
+}
+
+.search-bar,
+.zip-input,
+.store-dropdown,
+.search-button {
+  min-height: 38px;
+  max-width: 100%; /* Prevent items from exceeding the container width */
+  color: #000000d7;
+  border-radius: 20px;
+}
+
+.search-controls-row .search-bar input,
+.search-controls-row .zip-input input,
+.search-controls-row .search-button,
+.search-controls-row .store-dropdown .react-select__control {
+  flex: 0 0 auto; /* Prevent resizing */
+  height: 38px; /* Ensure consistent height */
+}
+
+.search-controls-row .search-bar input {
+  width: 100%;
+  padding: 8px 12px; /* Reduce padding */
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  font-size: 0.9rem; /* Slightly smaller font size */
+  height: 100%;
+  box-sizing: border-box;
+  background-color: white;
   color: black;
-  background: #f9f9f9;
-  height: 300px;
-  overflow-y: auto;
+  border-radius: 20px;
+}
+
+.search-controls-row .zip-input input {
+  width: 10ch; /* Enough space for 5 characters plus a little padding */
+  padding: 10.5px 12px; /* Add padding for better appearance */
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  text-align: center; /* Center-align the text for better UX */
+  box-sizing: border-box; /* Include padding in width calculations */
+  background-color: white;
+  color: black;
+}
+
+.search-controls-row .search-button {
+  width: auto;
+  border-radius: 20px;
+  padding: 5px 8px; /* Reduce padding */
+  background: white;
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem; /* Slightly smaller font size */
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+  border: 1px solid gray;
+}
+
+.search-controls-row .search-button:hover {
+  background: gray;
+  border-radius: 20px;
+}
+
+.search-controls-row .search-button:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  border-radius: 20px;
+}
+
+React Select customization .search-controls-row .react-select__control {
+  min-height: 40px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+}
+
+.search-controls-row .react-select__value-container {
+  padding: 0 8px;
+}
+
+.search-controls-row .react-select__single-value {
+  line-height: 38px;
+}
+
+.search-controls-row .react-select__indicators {
+  height: 38px;
+}
+
+.search-controls-row .react-select__control--is-focused {
+  border-color: #3498db;
+  box-shadow: 0 0 0 1px #3498db;
+}
+
+/* Filter section styles */
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.price-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.price-filter input {
+  margin: 0;
+}
+
+.sort-filters,
+.data-type-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sort-filters label,
+.data-type-filters label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.sort-filters select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9rem;
+  color: black;
+}
+
+.data-type-filters h4 {
+  margin-bottom: 8px;
+}
+
+/* Search results section */
+.search-results-container {
+  grid-column: 2;
+}
+
+.search-results-container h2 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.search-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Narrower cards */
+  gap: 20px; /* Space between cards */
+}
+
+/* Product Card Styles */
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-card-content {
+  flex: 1;
+  overflow-y: auto; /* Vertical scrollbar when needed */
+  padding-right: 5px; /* Prevent scrollbar from overlapping content */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .product-card h3 {
-  margin: 0 0 8px;
-  font-size: 1.2em;
-}
-.product-card ul {
-  padding-left: 20px; /* Add padding to the left of the list */
-  margin: 0; /* Remove default margin */
-  list-style-position: inside; /* Ensure bullets are inside the padding */
+  white-space: normal; /* Changed from nowrap */
+  overflow: visible; /* Changed from hidden */
+  text-overflow: clip; /* Changed from ellipsis */
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
 
-.product-card li {
-  margin: 4px 0; /* Add spacing between list items */
-}
 .product-card p {
   margin: 4px 0;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.product-card button {
-  margin-top: 8px;
+.nutrition-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 10px 0;
+  padding-left: 15px;
+  font-size: 0.85rem;
+  max-height: 100px;
+}
+
+.nutrition-list li {
+  margin: 2px 0;
+}
+
+.product-card-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.product-card-buttons button {
+  padding: 8px;
+  font-size: 0.85rem;
+  background: #000000d7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.product-card-buttons button:hover {
+  background: #000000d7;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.quantity-controls button {
+  width: 30px;
+  padding: 5px;
+}
+
+/* Load more button */
+.load-more {
+  margin: 25px auto 10px;
+  padding: 10px 20px;
+  background: #000000d7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: block;
+  transition: background-color 0.2s;
+}
+
+.load-more:hover {
+  background: #2980b9;
+}
+
+.load-more:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Popup styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.popup-content h1 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.popup-content button {
+  margin-top: 15px;
   padding: 8px 16px;
-  background: #007bff;
+  background: #000000d7;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.product-card button:hover {
-  background: #0056b3;
+.popup-content button:hover {
+  background: #000000d7;
 }
 
-.search-filters {
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.search-filters .search-bar {
-  display: flex;
-  width: 100%; /* Full width for the search bar */
-  margin-bottom: 15px; /* Add spacing below the search bar */
-}
-
-.search-filters .filter-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px; /* Add spacing between filter inputs */
-  margin-bottom: 15px; /* Add spacing below the filter group */
-}
-
-.search-filters input[type="text"],
-.search-filters select,
-.search-filters .react-select__control {
-  margin-right: 15px; /* Add spacing between inputs */
-}
-
-.search-filters .react-select__control {
-  width: 400px; /* Adjust dropdown width */
-  min-height: 20px;
-  height: 21.33px; /* Match height with other inputs */
-  padding: 0 8px;
-  box-sizing: border-box;
-}
-
-.search-filters .react-select__menu {
-  width: 400px; /* Match dropdown width with control */
-  z-index: 1000; /* Ensure it appears above other elements */
-}
-
-/* Dropdown container */
-.react-select__control {
-  width: 400px;
-  min-height: 20px;
-  height: 21.33px; /* Match height with other inputs */
-  padding: 0 8px;
-  box-sizing: border-box;
-  font-size: 13px; /* Match font size with other inputs */
-}
-
-/* Dropdown menu */
-.react-select__menu {
-  width: 400px;
-  z-index: 1000;
-  font-size: 13px; /* Match font size with other inputs */
-}
-
-/* Dropdown options */
-.react-select__option {
-  color: #333 !important; /* Default text color */
-  background-color: #fff; /* Default background color */
-  padding: 8px;
-}
-
-/* Hovered option */
-.react-select__option--is-focused {
-  background-color: #007bff; /* Darker blue for hover */
-  color: #fff; /* White text for better contrast */
-}
-
-/* Selected option */
-.react-select__option--is-selected {
-  background-color: #0056b3; /* Even darker blue for selected */
-  color: #fff;
-}
-
-/* Dropdown indicator (arrow) */
-.react-select__indicators {
-  height: 21.33px; /* Match the height of the control */
-  display: flex;
-  align-items: center; /* Center the indicator vertically */
-  padding: 0 4px; /* Reduce padding for a smaller indicator */
-}
-
-/* Value container (inside the dropdown) */
-.react-select__value-container {
-  padding: 0;
-}
-
-/* Input inside the dropdown */
-.react-select__input {
+.popup-content ul {
+  padding-left: 20px;
   margin: 0;
-  padding: 0;
+  list-style-position: inside;
 }
 
-.search-filters label {
-  margin-right: 15px; /* Add spacing between labels */
+.popup-content li {
+  margin: 4px 0;
 }
 
-.search-filters .zip-and-store {
-  display: flex; /* Align the inputs horizontally */
-  justify-content: center;
-  gap: 15px; /* Add spacing between the inputs */
-  margin-top: 15px; /* Add spacing above the row */
+/* Price comparison table */
+.price-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
 }
 
-#brandOwner {
-  width: 190px; /* Increase the width slightly */
+.price-comparison-table th,
+.price-comparison-table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.price-comparison-table th {
+  background-color: #f2f2f2;
+}
+ 
+@media (max-width: 992px) {
+  .top-section {
+    grid-template-columns: 1fr;
+  }
+
+  .search-results-container {
+    grid-column: 1;
+  }
+
+  .search-results {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Smaller cards */
+  }
+}
+
+@media (max-width: 768px) {
+  .search-controls-row {
+    flex-direction: column;
+  }
+
+  .search-bar,
+  .zip-input,
+  .store-dropdown,
+  .search-button {
+    flex: 1 1 100%;
+  }
+
+  .search-results {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .filter-sidebar {
+    padding: 10px; /* Reduce padding for smaller screens */
+  }
+
+  .product-card {
+    min-height: 250px; /* Adjust card height */
+    max-height: 350px;
+  }
+
+  .search-controls-row {
+    gap: 10px; /* Reduce spacing */
+  }
+}
+
+.search-controls-row .store-dropdown .react-select__control {
+  width: 400px; /* Increase the width of the dropdown */
+  min-height: 38px; /* Ensure consistent height */
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  box-sizing: border-box;
 }

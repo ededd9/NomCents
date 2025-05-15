@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import FavoritesList from "../components/FavoritesList";
 import { LoginContext } from "../contexts/LoginContext";
-import Popup from "../components/PopUp"; // <-- Import Popup
-// import "./FavoritesPage.css"; // Optional: Create and import CSS
+import Popup from "../components/PopUp"; 
+import "./FavoritesPage.css"; 
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -142,8 +142,8 @@ const FavoritesPage = () => {
   };
 
   return (
-    <div>
-      <h1>Your Favorite Products</h1>
+    <div className="FavoritesPage"> 
+      <h1 className="Favorites-title">Favorites </h1>
       {isLoading ? (
         <p>Loading favorites...</p>
       ) : !isLoggedIn ? (

@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import PopUp from "../components/PopUp";
+import "./Profile.css";
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -204,152 +205,154 @@ const Profile = () => {
     <div className="Profile">
       <h1>Nomcents Profile</h1>
 
-      {/* BMR Calculation Form Section */}
-      <div className="bmr-calculation-form">
-        <h2>BMR Calculation</h2>
-        <div>
-          <label>Units: 
-            <select value={units} onChange={handleUnitsChange}>
-              <option value=""> Select</option>
-              <option value="standard"> Standard</option>
-              <option value="metric"> Metric</option>
-            </select>
-          </label>
-        </div> 
+      <div className="profile-container">
+        {/* BMR Calculation Form Section */}
+        <div className="bmr-calculation-form">
+          <h2>Calculate BMR </h2>
+          <div>
+            <label>Units: 
+              <select value={units} onChange={handleUnitsChange}>
+                <option value=""> Units </option>
+                <option value="standard"> Standard</option>
+                <option value="metric"> Metric</option>
+              </select>
+            </label>
+          </div> 
 
-        <div>
-          <label>Gender: 
-            <select value={gender} onChange={handleGenderChange}>
-              <option value=""> Select</option>
-              <option value="male"> Male</option>
-              <option value="female"> Female</option>
-            </select>
-          </label>
-        </div> 
+          <div>
+            <label>Gender: 
+              <select value={gender} onChange={handleGenderChange}>
+                <option value=""> Gender </option>
+                <option value="male"> Male</option>
+                <option value="female"> Female</option>
+              </select>
+            </label>
+          </div> 
 
-        <div>
-          {units === "standard" ? (
+          <div>
+            {units === "standard" ? (
+              <>
+                <label>Weight:</label>
+                <input 
+                  id="weight"
+                  type="number"
+                  value={weight}
+                  onChange={handleDataChange}
+                  placeholder="pounds"
+                />
+              </>
+            ) : (
+              <>
+                <label>Weight:</label>
+                <input 
+                  id="weight"
+                  type="number"
+                  value={weight}
+                  onChange={handleDataChange}
+                  placeholder="kg"
+                />
+              </>
+            )}
+          </div>
+
+          <div>
+            {units === "standard" ? (
+              <>
+                <label>Height:</label>
+                <input 
+                  id="height"
+                  type="number"
+                  value={height}
+                  onChange={handleDataChange}
+                  placeholder="inches"
+                />
+              </>
+            ) : (
+              <>
+                <label>Height:</label>
+                <input 
+                  id="height"
+                  type="number"
+                  value={height}
+                  onChange={handleDataChange}
+                  placeholder="cm"
+                />
+              </>
+            )}
+          </div>
+
+          <div>
+            <label>Age:</label>
+            <input 
+              id="age"
+              type="number"
+              value={age}
+              onChange={handleDataChange}
+            />
+          </div>
+
+          <div>
+            <label>Goals: 
+              <select value={goal} onChange={handleGoalChange}>
+                <option value=""> Goal </option>
+                <option value="0"> Maintain weight</option>
+                <option value="-1"> Lose one pound a week</option>
+                <option value="-2"> Lose two pounds a week</option>
+                <option value="1"> Gain one pound a week</option>
+                <option value="2"> Gain two pounds a week</option>
+              </select>
+            </label>
+          </div>
+
+          <div>
+            <label>Activity Level: 
+              <select value={activity} onChange={handleActivityChange}>
+                <option value=""> Activity Level </option>
+                <option value="1.2"> Sedentary (little to no exercise + work a desk job)</option>
+                <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
+                <option value="1.55"> Moderately active(moderate exercise 3-5 days/week) </option>
+                <option value="1.75"> Very active (heavy exercise 6-7 days/week) </option>
+                <option value="1.9"> Extremely active (very heavy exercise, hard labor job, training 2x/day) </option>
+              </select>
+            </label>
+          </div>
+
+          <div>
+            <label>Weekly Budget:</label>
+            <input 
+              type="number"
+              value={weeklyBudget}
+              onChange={handleWeeklyBudgetChange}
+              placeholder="Weekly Budget"
+            />
+          </div>
+
+          <button onClick={handleBMR}>Calculate BMR</button>
+        </div>
+
+        {/* Current Calculations Section */}
+        <div className="current-calculations">
+          <h2>Your Current Calculations</h2>
+          {isLoggedIn ? (
             <>
-              <label>Weight:</label>
-              <input 
-                id="weight"
-                type="number"
-                value={weight}
-                onChange={handleDataChange}
-                placeholder="pounds"
-              />
+              <h3>Your Profile</h3> 
+              <p>Name: {user.name}</p>
+              <p>Gender: {gender}</p>
+              <p>Weight: {weight}</p>
+              <p>Height: {height}</p>
+              <p>Age: {age}</p> 
+              <p>Daily Calories: {dailyCal}</p>
+              <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
+              <p>Weekly Budget: {weeklyBudget}</p>
+              <button onClick={updateUserInformation}>Save Information</button>
             </>
           ) : (
             <>
-              <label>Weight:</label>
-              <input 
-                id="weight"
-                type="number"
-                value={weight}
-                onChange={handleDataChange}
-                placeholder="kg"
-              />
+              <p>Daily Calories: {dailyCal}</p>
+              <p>Daily Calories for Goal: {((dailyCal * activity) + (500 * goal)).toFixed(2)}</p>
             </>
           )}
         </div>
-
-        <div>
-          {units === "standard" ? (
-            <>
-              <label>Height:</label>
-              <input 
-                id="height"
-                type="number"
-                value={height}
-                onChange={handleDataChange}
-                placeholder="inches"
-              />
-            </>
-          ) : (
-            <>
-              <label>Height:</label>
-              <input 
-                id="height"
-                type="number"
-                value={height}
-                onChange={handleDataChange}
-                placeholder="cm"
-              />
-            </>
-          )}
-        </div>
-
-        <div>
-          <label>Age:</label>
-          <input 
-            id="age"
-            type="number"
-            value={age}
-            onChange={handleDataChange}
-          />
-        </div>
-
-        <div>
-          <label>Goals: 
-            <select value={goal} onChange={handleGoalChange}>
-              <option value=""> Select</option>
-              <option value="0"> Maintain weight</option>
-              <option value="-1"> Lose one pound a week</option>
-              <option value="-2"> Lose two pounds a week</option>
-              <option value="1"> Gain one pound a week</option>
-              <option value="2"> Gain two pounds a week</option>
-            </select>
-          </label>
-        </div>
-
-        <div>
-          <label>Activity Level: 
-            <select value={activity} onChange={handleActivityChange}>
-              <option value=""> Select</option>
-              <option value="1.2"> Sedentary (little to no exercise + work a desk job)</option>
-              <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
-              <option value="1.55"> Moderately active(moderate exercise 3-5 days/week) </option>
-              <option value="1.75"> Very active (heavy exercise 6-7 days/week) </option>
-              <option value="1.9"> Extremely active (very heavy exercise, hard labor job, training 2x/day) </option>
-            </select>
-          </label>
-        </div>
-
-        <div>
-          <label>Weekly Budget:</label>
-          <input 
-            type="number"
-            value={weeklyBudget}
-            onChange={handleWeeklyBudgetChange}
-            placeholder="Weekly Budget"
-          />
-        </div>
-
-        <button onClick={handleBMR}>Calculate BMR</button>
-      </div>
-
-      {/* Current Calculations Section */}
-      <div className="current-calculations">
-        <h2>Current Calculations</h2>
-        {isLoggedIn ? (
-          <>
-            <h3>Your Profile</h3> 
-            <p>Name: {user.name}</p>
-            <p>Gender: {gender}</p>
-            <p>Weight: {weight}</p>
-            <p>Height: {height}</p>
-            <p>Age: {age}</p> 
-            <p>Daily Calories: {dailyCal}</p>
-            <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
-            <p>Weekly Budget: {weeklyBudget}</p>
-            <button onClick={updateUserInformation}>Save Information</button>
-          </>
-        ) : (
-          <>
-            <p>Daily Calories: {dailyCal}</p>
-            <p>Daily Calories for Goal: {(dailyCal * activity) + (500 * goal)}</p>
-          </>
-        )}
       </div>
 
       {/* Popup */}
