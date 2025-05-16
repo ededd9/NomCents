@@ -16,21 +16,15 @@ const GroceryCartPage = () => {
   // Fetch grocery list when user logs in or changes
   useEffect(() => {
     if (isLoggedIn && user) {
-
       fetchGroceryList(user.email);
-    } else {
-        // Clear cart if user logs out
-        setCartItems([]);
-    }
-  }, [isLoggedIn, user]);
-
-  // Update cart total/remaining weekly budget when cart items change
-  useEffect(() => {
-    if (isLoggedIn && user) {
       cartTotal(user.email);
       weeklyTotal(user.email);
+    } else {
+      setCartItems([]);
+      setCartValue(0);
+      setWeekTotal(0);
     }
-  }, [cartItems, user, isLoggedIn]);
+  }, [isLoggedIn, user]);
 
   // Function to fetch grocery list from backend
   const fetchGroceryList = async (email) => {
@@ -96,42 +90,49 @@ const GroceryCartPage = () => {
   };
 
   // Function to increment quantity (no changes needed here)
-  const incrementQuantity = (fdcId) => {
+  const incrementQuantity = async (fdcId) => {
     const newGroceryList = cartItems.map((item) =>
       item.fdcId === fdcId ? { ...item, quantity: item.quantity + 1 } : item
     );
     setCartItems(newGroceryList);
-    updateGroceryList(newGroceryList);
+    await updateGroceryList(newGroceryList); // Wait for backend update
+    cartTotal(user.email);
+    weeklyTotal(user.email);
   };
 
-  // Function to decrement quantity (no changes needed here)
-  const decrementQuantity = (fdcId) => {
+  // Function to decrement quantity
+  const decrementQuantity = async (fdcId) => {
     const newGroceryList = cartItems.map((item) =>
       item.fdcId === fdcId && item.quantity > 1
         ? { ...item, quantity: item.quantity - 1 }
         : item
     );
-    // No need to filter here, just update quantity
     setCartItems(newGroceryList);
-    updateGroceryList(newGroceryList);
+    await updateGroceryList(newGroceryList);
+    cartTotal(user.email);
+    weeklyTotal(user.email);
   };
 
-  // Function to remove item (no changes needed here)
-  const removeItem = (fdcId) => {
+  // Function to remove item
+  const removeItem = async (fdcId) => {
     const newGroceryList = cartItems.filter((item) => item.fdcId !== fdcId);
     setCartItems(newGroceryList);
-    updateGroceryList(newGroceryList);
+    await updateGroceryList(newGroceryList);
+    cartTotal(user.email);
+    weeklyTotal(user.email);
   };
 
-  // --- NEW Function to toggle checked status ---
-  const toggleChecked = (fdcId) => {
+  // Function to toggle checked status
+  const toggleChecked = async (fdcId) => {
     const newGroceryList = cartItems.map((item) =>
       item.fdcId === fdcId ? { ...item, isChecked: !item.isChecked } : item
     );
     setCartItems(newGroceryList);
-    updateGroceryList(newGroceryList); // Persist the change to the backend
+    await updateGroceryList(newGroceryList);
+    cartTotal(user.email);
+    weeklyTotal(user.email);
   };
-  // --- End of NEW Function ---
+
   const cartTotal = async (email) => {
 
     try {
