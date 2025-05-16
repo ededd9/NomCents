@@ -764,92 +764,68 @@ function ViewProducts() {
       </div>
 
 
-      {/* Product Details Popup */}
+            {/* Product Details Popup */}
       {showProductDetails && selectedProduct && (
         <Popup
           message={
             <div>
               <h1>{selectedProduct.name}</h1>
-              <p>Brand: {selectedProduct.brandName || "N/A"}</p>
-              <p>Brand Owner: {selectedProduct.brandOwner || "N/A"}</p>
-              <p>Ingredients: {selectedProduct.ingredients || "N/A"}</p>
-              <p>Package Size: {selectedProduct.packageSize || "N/A"}</p>
-
-              <h2>Nutrition Per Serving</h2>
+              <p>Brand: {selectedProduct.brandName}</p>
+              <p>Brand Owner: {selectedProduct.brandOwner}</p>
+              <p>Ingredients: {selectedProduct.ingredients}</p>
+              <h2>Nutrition</h2>
               <ul>
-                <li>
-                  Serving size: {selectedProduct.servingsize}{" "}
-                  {selectedProduct.servingSizeUnit}
-                </li>
-                <li>
-                  Calories:{" "}
-                  {selectedProduct.nutrition?.calories?.toFixed(2) || "N/A"}
-                </li>
-                <li>
-                  Protein:{" "}
-                  {selectedProduct.nutrition?.protein?.toFixed(2) || "N/A"}g
-                </li>
-                <li>
-                  Fat: {selectedProduct.nutrition?.fat?.toFixed(2) || "N/A"}g
-                </li>
-                <li>
-                  Carbs:{" "}
-                  {selectedProduct.nutrition?.carbohydrates?.toFixed(2) ||
-                    "N/A"}
-                  g
-                </li>
-                <li>
-                  Sugars:{" "}
-                  {selectedProduct.nutrition?.sugars?.toFixed(2) || "N/A"}g
-                </li>
-                <li>
-                  Fiber: {selectedProduct.nutrition?.fiber?.toFixed(2) || "N/A"}
-                  g
-                </li>
-                <li>
-                  Nutrition Score:{" "}
-                  {calculateNutritionScore(selectedProduct)?.toFixed(2) ||
-                    "N/A"}
-                </li>
+                <li>Calories: {selectedProduct.nutrition.calories}</li>
+                <li>Protein: {selectedProduct.nutrition.protein}</li>
+                <li>Fat: {selectedProduct.nutrition.fat}</li>
+                <li>Carbohydrates: {selectedProduct.nutrition.carbohydrates}</li>
+                <li>Sugars: {selectedProduct.nutrition.sugars}</li>
+                <li>Fiber: {selectedProduct.nutrition.fiber}</li>
               </ul>
-
               <h2>Vitamins and Minerals</h2>
               <ul>
-                {selectedProduct.nutrition?.vitamins ? (
-                  Object.entries(selectedProduct.nutrition.vitamins).map(
-                    ([key, value]) => (
-                      <li key={key}>
-                        {key}: {value}
-                      </li>
-                    )
+                {Object.entries(selectedProduct.nutrition.vitamins || {}).map(
+                  ([key, value]) => (
+                    <li key={key}>
+                      {key}: {value}
+                    </li>
                   )
-                ) : (
-                  <li>No vitamin data available</li>
                 )}
               </ul>
-
               {showPriceComparison && (
-                <div className="price-comparison">
+                <div style={{ marginTop: "20px" }}>
                   <h2>Price Comparison</h2>
-                  <table className="price-comparison-table">
+                  <table>
                     <thead>
                       <tr>
-                        <th>Store</th>
+                        <th>Store Location</th>
                         <th>Price</th>
                       </tr>
                     </thead>
                     <tbody>
                       {priceComparisonData.map((price) => {
-                        const store = storeOptions.find(
-                          (s) => s.value === price.locationId
-                        );
+                        const isSelectedStore = price.locationId === selectedStore?.value; // Check if this is the selected store
                         return (
                           <tr key={price.locationId}>
-                            <td>{store?.label || "Unknown Store"}</td>
+                            <td style={{paddingRight: "20px"}}>
+                              {
+                                storeOptions.find((store) => store.value === price.locationId)
+                                  ?.label || "Unknown Store"
+                              }
+                            </td>
                             <td>
-                              {price.price !== "n/a"
-                                ? `$${price.price}`
-                                : "N/A"}
+                              {price.price !== "n/a" ? `$${price.price}` : "Not Available"}
+                              {isSelectedStore && (
+                                <span
+                                  style={{
+                                    color: "blue",
+                                    fontWeight: "bold",
+                                    marginLeft: "5px",
+                                  }}
+                                >
+                                  {" ← currently selected store"}
+                                </span>
+                              )}
                             </td>
                           </tr>
                         );
@@ -858,13 +834,14 @@ function ViewProducts() {
                   </table>
                 </div>
               )}
-
               {selectedStore && (
-                <button onClick={fetchPriceComparison}>
-                  {showPriceComparison ? "Hide Prices" : "Compare Prices"}
+                <button
+                  onClick={fetchPriceComparison}
+                  style={{ marginTop: "10px", marginRight: "5px" }}
+                >
+                  {showPriceComparison ? "Hide Price Comparison" : "Compare Prices with Other Nearby Stores"}
                 </button>
               )}
-
               <button onClick={closeProductDetails}>Close</button>
             </div>
           }
