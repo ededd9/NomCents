@@ -45,9 +45,13 @@ const GroceryCart = ({ cartValue,weekTotal, cartItems, incrementQuantity, decrem
                             </span>
                         )}
                         {/* Price - Display if available */}
-                        {product.price && (
+                        {product.price !== undefined && product.price !== null && !isNaN(product.price) ? (
                           <span style={{ display: "block", fontSize: "0.9em", color: "black" }}>
-                            Price: ${product.price.toFixed(2)}
+                            Price: ${Number(product.price).toFixed(2)}
+                          </span>
+                        ) : (
+                          <span style={{ display: "block", fontSize: "0.9em", color: "red" }}>
+                            Price: N/A
                           </span>
                         )}
                     </div>

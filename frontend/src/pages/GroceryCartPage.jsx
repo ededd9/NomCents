@@ -24,6 +24,14 @@ const GroceryCartPage = () => {
     }
   }, [isLoggedIn, user]);
 
+  // Update cart total/remaining weekly budget when cart items change
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      cartTotal(user.email);
+      weeklyTotal(user.email);
+    }
+  }, [cartItems, user, isLoggedIn]);
+
   // Function to fetch grocery list from backend
   const fetchGroceryList = async (email) => {
     try {
@@ -36,8 +44,6 @@ const GroceryCartPage = () => {
           ...item,
           isChecked: item.isChecked || false // Add default value if missing
         }));
-        await cartTotal(email)
-        await weeklyTotal(email)
         setCartItems(itemsWithChecked);
       } else {
           console.error("Failed to fetch grocery list:", response.statusText);
@@ -141,13 +147,13 @@ const GroceryCartPage = () => {
       console.error("Error fetching grocery listprice:", error);
     }
   };
+
   const weeklyTotal = async (email) => {
     try {
       const response = await fetch(`${BACKEND_API_URL}/userweektotal?email=${email}`);
       if (response.ok) {
         const data = await response.json();
         setWeekTotal(data.total);
-        console.log("Weekly total fetched:", data.weekTotal);
       } else {
           console.error("Failed to fetch grocery listprice:", response.statusText);
       }

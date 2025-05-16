@@ -142,6 +142,17 @@ def get_kroger_token():
     print("Token: ", token_cache["access_token"], flush=True)
     return jsonify({"token": token_cache["access_token"]})
 
+def calculate_cart_total(user):
+    total = 0.0
+    for item in user.get('groceryList', []):
+        try:
+            price = float(item.get('price', 0) or 0)
+            quantity = int(item.get('quantity', 1) or 1)
+            total += price * quantity
+        except (ValueError, TypeError):
+            continue
+    return total
+
 @app.route('/api/userweektotal', methods=['GET'])
 def get_weekly_spending_total():
     email = request.args.get("email")
@@ -165,14 +176,19 @@ def get_weekly_spending_total():
                 log_date_obj = datetime.strptime(log_date, '%Y-%m-%d').date()
                 if week_ago <= log_date_obj <= today and "spending" in log_data:
                     for entry in log_data["spending"]:
-                        total += float(entry.get("amount", 0))
+                        try:
+                            amount = float(entry.get("amount", 0) or 0)
+                        except (ValueError, TypeError):
+                            amount = 0.0
+                        total += amount
             except Exception:
                 continue
         print(f"Total spending for {email} in the last week: {total}")
-        usstring=('{"email":"'+ email+'"}')
-        user=data.userLookup(usstring)
-        print("weekly budget is ", user['weeklyBudget'])
-        return jsonify({"total": round(float(user['weeklyBudget'])-total, 2)}), 200
+        usstring = '{"email":"' + email + '"}'
+        user = data.userLookup(usstring)
+        weekly_budget = float(user.get('weeklyBudget', 0))
+        cart_total = calculate_cart_total(user)
+        return jsonify({"total": round(weekly_budget - total - cart_total, 2)}), 200
 
     except Exception as e:
         print(f"Error in get_weekly_spending_total: {e}")
@@ -182,17 +198,20 @@ def get_weekly_spending_total():
 
 
 @app.route('/api/usercartvalue', methods=['GET'])
-
 def usercartvalue():
-    email=request.args['email']
-    usstring=('{"email":"'+ email+'"}')
-    user=data.userLookup(usstring)
-    sum=0
-    for i in user['groceryList']:
-        if 'price' in i.keys():
-            sum+=i['price']*i['quantity']
-    print("sum is ", sum)
-    return jsonify({"cartValue": round(sum,2)})
+    email = request.args.get('email')
+    usstring = '{"email":"' + email + '"}'
+    user = data.userLookup(usstring)
+    total = 0.0
+    for item in user.get('groceryList', []):
+        try:
+            price = float(item.get('price', 0) or 0)  # Treat missing/None/invalid as 0
+            quantity = int(item.get('quantity', 1) or 1)  # Default quantity to 1 if missing/invalid
+            total += price * quantity
+        except (ValueError, TypeError):
+            continue  # Skip items with completely invalid data
+    print("sum is ", total, flush=True)
+    return jsonify({"cartValue": round(total, 2)})
     
 # get takes ?email= and the other two methods take json for the user as teh user variable
 @app.route('/api/user', methods=['GET', 'POST', 'PUT'])
