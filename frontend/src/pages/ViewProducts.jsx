@@ -710,7 +710,7 @@ function ViewProducts() {
                             addToGroceryList(product);
                           }}
                         >
-                          Add to List
+                          Add to Grocery List
                         </button>
                       )}
 
