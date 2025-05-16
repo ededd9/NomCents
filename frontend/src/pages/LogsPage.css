@@ -8,8 +8,22 @@
     min-height: 100vh; /* Ensure it covers the full viewport height */
     display: flex;
     flex-direction: column;
-    padding: 20px;
     margin: 0 auto;
     width: 100%; /* Ensure it spans the full width of the page */
     box-sizing: border-box; /* Include padding and border in width calculations */
+  }
+
+  .Logs-content-frame {
+    width: 70%;
+    align-self: center;
+  }
+
+  #datePicker {
+    align-self: center; /* Center the date picker horizontally */
+    margin: 20px 0; /* Add some margin for spacing */
+    padding: 10px; /* Add padding for better touch targets */
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Light border */
+    width: 200px; /* Fixed width for the date picker */
+    font-size: 16px; /* Font size for readability */
   }
