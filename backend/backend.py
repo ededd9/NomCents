@@ -975,9 +975,10 @@ def price_comparison():
     results = []
     
     for location_id in location_ids:
-        response = requests.get(f"https://api-ce.kroger.com/v1/products/00{gtinUpc[:-1]}?filter.locationId={location_id}", headers=headers)
+        response = requests.get(f"https://api-ce.kroger.com/v1/products/{gtinUpc}?filter.locationId={location_id}", headers=headers)
         
         print("Kroger API Request URL:", response.url, flush=True)
+        print("Kroger API response: ", response.text, flush=True)
         
         if response.status_code == 200:
             try:
@@ -991,6 +992,7 @@ def price_comparison():
             except (KeyError, IndexError, TypeError, ValueError) as e:
                 print(f"Error parsing Kroger API response: {e}", flush=True)
     
+    print("Price comparison results:", results, flush=True)
     return jsonify(results)
 
 

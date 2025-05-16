@@ -629,7 +629,10 @@ function ViewProducts() {
                 );
 
                 return (
-                  <div key={product.fdcId} className="product-card">
+                  <div
+                    key={`${product.fdcId}-${product.gtinUpc || ''}-${product.name || ''}-${product.brandName || ''}`}
+                    className="product-card"
+                  >
                     <div
                       className="product-card-content"
                       onClick={() => viewProductDetails(product)}
