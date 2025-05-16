@@ -1,4 +1,3 @@
-import React from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -40,7 +39,7 @@ const WeeklyCaloriesChart = ({ weeklyCalorieDates, weeklyCalories }) => {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: true },
-      title: { display: true, text: "Weekly Calorie Intake" },
+      // title: { display: true, text: "Weekly Calorie Intake", font: { size: 16 } },
     },
     scales: {
       y: {

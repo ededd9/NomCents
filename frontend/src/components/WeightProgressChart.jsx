@@ -1,5 +1,3 @@
-// src/components/WeightProgressChart.jsx
-import React from 'react'; // Removed useState, useEffect, useContext as data comes via props
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -28,7 +26,7 @@ const WeightProgressChart = ({ chartData, userProfile, isLoading, error }) => {
         maintainAspectRatio: false,
         plugins: {
             legend: { position: 'top' },
-            title: { display: true, text: 'Weight Progress vs Target', font: { size: 16 } },
+            //title: { display: true, text: 'Weight Progress vs Target', font: { size: 16 } },
             tooltip: {
                 enabled: true,
                 callbacks: {

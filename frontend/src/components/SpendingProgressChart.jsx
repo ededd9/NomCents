@@ -1,4 +1,3 @@
-import React from 'react';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -54,7 +53,7 @@ const SpendingProgressChart = ({ weeklyDates, weeklySpending, weeklyBudget }) =>
         maintainAspectRatio: false,
         plugins: {
             legend: { display: true },
-            title: { display: true, text: 'Weekly Spending Progress' },
+            //title: { display: true, text: 'Weekly Spending Progress', font: { size: 16 } },
         },
         scales: {
             y: {

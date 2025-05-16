@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { LoginContext } from '../contexts/LoginContext';
 import WeightProgressChart from '../components/WeightProgressChart';
 import SpendingProgressChart from '../components/SpendingProgressChart';
 import WeeklyCaloriesChart from '../components/WeeklyCaloriesChart';
+import './ProgressPage.css'; 
 
 const BACKEND_API_URL = "http://127.0.0.1:5000/api";
 
@@ -25,7 +26,6 @@ const ProgressPage = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [actionStatus, setActionStatus] = useState('');
 
     // For plotting against weekly budget in spending chart
     const [weeklySpending, setWeeklySpending] = useState(0);
@@ -34,7 +34,6 @@ const ProgressPage = () => {
     // for charting weekly calorie intake
     const [weeklyCalories, setWeeklyCalories] = useState([]);
     const [weeklyCalorieDates, setWeeklyCalorieDates] = useState([]);
-
 
     const fetchData = useCallback(async () => {
 
@@ -47,7 +46,6 @@ const ProgressPage = () => {
         }
         setIsLoading(true);
         setError(null);
-        setActionStatus('');
 
         try {
             const [historyResponse, profileResponse] = await Promise.all([
@@ -57,8 +55,7 @@ const ProgressPage = () => {
 
             if (!profileResponse.ok) throw new Error(`Failed to fetch profile: ${profileResponse.statusText} (Status: ${profileResponse.status})`);
             const profileData = await profileResponse.json();
-            console.log("Profile data fetched:", profileData); // Debug log
-            setUserProfile(profileData); // Ensure this includes weeklyBudget
+            setUserProfile(profileData);
 
             if (!historyResponse.ok) throw new Error(`Failed to fetch weight history: ${historyResponse.statusText} (Status: ${historyResponse.status})`);
             const fetchedHistoryData = await historyResponse.json(); 
@@ -159,7 +156,6 @@ const ProgressPage = () => {
 
                 Object.keys(weeklyLogs).forEach(date => {
                     dates.push(date);
-
                     const dailyTotal = weeklyLogs[date].reduce((sum, log) => sum + log.amount, 0);
                     cumulativeTotal += dailyTotal;
                     spendingTotals.push(cumulativeTotal);
@@ -218,75 +214,30 @@ const ProgressPage = () => {
         }
     }, [isLoggedIn]);
 
-    const handleWeightLogged = () => {
-        setActionStatus('');
-        fetchData();
-    };
-
-    const handleDeleteLastWeightEntry = async () => {
-        if (!isLoggedIn || !user?.email) { 
-            setActionStatus('Error: User not logged in or identified.');
-            return;
-        }
-        if (!window.confirm("Are you sure you want to delete your most recent weight entry? This cannot be undone.")) {
-            return;
-        }
-        setActionStatus('Deleting last entry...');
-        try {
-            const response = await fetch(`${BACKEND_API_URL}/user/weight_log?email=${user.email}`, {
-                method: 'DELETE',
-            });
-            const result = await response.json();
-            if (response.ok) {
-                setActionStatus(`Success: ${result.message}`);
-                fetchData();
-            } else {
-                setActionStatus(`Error: ${result.message || 'Failed to delete entry'}`);
-            }
-        } catch (err) {
-            console.error("Error deleting last weight entry:", err);
-            setActionStatus('Error: Could not connect to server for deletion.');
-        }
-    };
-
-
-    let content;
-    if (!isLoggedIn) {
-        content = <p>Please log in to view and track your weight progress.</p>;
-    } else if (isLoading) {
-        content = <p>Loading progress...</p>;
-    } else if (error) {
-        content = <p style={{ color: 'red' }}>Error: {error}</p>;
-    } else if (chartData.labels && chartData.labels.length > 0) {
-        content = (
-            <>
+    return (
+        <div className='progress-page-container'>
+            <div className='progress-page-content'>
+                <h1 style={{ textAlign: 'center' }}>Your Progress</h1>
+                <h2 style={{ textAlign: 'center' }}>Weekly Calorie Intake</h2>
+                <WeeklyCaloriesChart
+                    weeklyCalorieDates={weeklyCalorieDates}
+                    weeklyCalories={weeklyCalories}
+                />
+                <h2 style={{ textAlign: 'center' }}>Weight Progress</h2>
                 <WeightProgressChart
                     chartData={chartData}
                     userProfile={userProfile}
+                    isLoading={isLoading}
+                    error={error}
+                    isLoggedIn={isLoggedIn}
                 />
-            </>
-        );
-    } else if (userProfile) { // If logged in, profile fetched, but no chart data after loading & no error
-        content = <p>No weight data logged yet. Add your current weight to start tracking!</p>;
-    } else { // Fallback, possibly while profile is still loading or if user context isn't ready
-        content = <p>Loading user data...</p>
-    }
-
-
-    return (
-        <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-            <h2>Your Weight Progress</h2>
-            {content}
-            {actionStatus && <p style={{ marginTop: '10px', textAlign: 'center' }}><small>{actionStatus}</small></p>}
-            <SpendingProgressChart
-                weeklyDates={weeklyDates}
-                weeklySpending={weeklySpending}
-                weeklyBudget={userProfile?.weeklyBudget || 0}
-            />
-            <WeeklyCaloriesChart
-                weeklyCalorieDates={weeklyCalorieDates}
-                weeklyCalories={weeklyCalories}
-            />
+                <h2 style={{ textAlign: 'center' }}>Weekly Spending Progress</h2>
+                <SpendingProgressChart
+                    weeklyDates={weeklyDates}
+                    weeklySpending={weeklySpending}
+                    weeklyBudget={userProfile?.weeklyBudget || 0}
+                />
+            </div>
         </div>
     );
 };
