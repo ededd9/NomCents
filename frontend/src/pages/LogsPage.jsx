@@ -99,36 +99,36 @@ const LogsPage = () => {
     }
   };
 
+  const fetchLogs = async () => {
+    if (!user?.email) return;
+    const res = await fetch(`${BACKEND_API_URL}/food_logs?email=${user.email}`);
+    const data = await res.json();
+    setFoodLogs(data.logs || {});
+  };
+
+  const fetchWeightLogs = async () => {
+    const response = await fetch(`${BACKEND_API_URL}/user/weight_history?email=${user.email}`);
+    const result = await response.json();
+    if (response.ok) {
+      const filteredLogs = result.labels
+        .map((label, index) => ({
+          date: label,
+          weight: result.data[index],
+        }))
+        .filter((log) => log.date === selectedDate);
+      setWeightLogs(filteredLogs);
+    }
+  };
+
+  const fetchSpendingLogs = async () => {
+    const response = await fetch(`${BACKEND_API_URL}/user/spending_logs?date=${selectedDate}&email=${user.email}`);
+    const result = await response.json();
+    if (response.ok) {
+      setSpendingLogs(result.logs || []);
+    }
+  };
+
   useEffect(() => {
-    const fetchLogs = async () => {
-      if (!user?.email) return;
-      const res = await fetch(`${BACKEND_API_URL}/food_logs?email=${user.email}`);
-      const data = await res.json();
-      setFoodLogs(data.logs || {});
-    };
-
-    const fetchWeightLogs = async () => {
-      const response = await fetch(`${BACKEND_API_URL}/user/weight_history?email=${user.email}`);
-      const result = await response.json();
-      if (response.ok) {
-        const filteredLogs = result.labels
-          .map((label, index) => ({
-            date: label,
-            weight: result.data[index],
-          }))
-          .filter((log) => log.date === selectedDate);
-        setWeightLogs(filteredLogs);
-      }
-    };
-
-    const fetchSpendingLogs = async () => {
-      const response = await fetch(`${BACKEND_API_URL}/user/spending_logs?date=${selectedDate}&email=${user.email}`);
-      const result = await response.json();
-      if (response.ok) {
-        setSpendingLogs(result.logs || []);
-      }
-    };
-
     if (isLoggedIn) {
       fetchLogs();
       fetchWeightLogs();
@@ -264,7 +264,7 @@ const LogsPage = () => {
         ) : (
           <p>No weight logs for this date.</p>
         )}
-        <WeightLogger onWeightLogged={() => {}} selectedDate={selectedDate} />
+        <WeightLogger onWeightLogged={fetchWeightLogs} selectedDate={selectedDate} />
 
         <h3>Spending Logs for {formatDate(selectedDate)}</h3>
         {spendingLogs.length > 0 ? (
@@ -279,7 +279,7 @@ const LogsPage = () => {
           <p>No spending logs for this date.</p>
         )}
         <SpendingLogger
-          onSpendingLogged={() => {}}
+          onSpendingLogged={() => fetchSpendingLogs(selectedDate)}
           selectedDate={selectedDate}
         />
       </div>
