@@ -150,77 +150,79 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-page">
-      <h1 className="login-pg-title">{isRegistering ? "Register" : "Login"}</h1>
+    <div className="login-page-container">
+      <div className="login-page">
+        <h1 className="login-pg-title">{isRegistering ? "Register" : "Login"}</h1>
 
-      <form className="login-form" onSubmit={handleEmailAuth}>
-        {isRegistering && (
+        <form className="login-form" onSubmit={handleEmailAuth}>
+          {isRegistering && (
+            <div className="form-group">
+              <label className="form-label">Name:</label>
+              <input
+                className="form-input"
+                type="text"
+                name="name"
+                value={loginData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
+
           <div className="form-group">
-            <label className="form-label">Name:</label>
+            <label className="form-label">Email:</label>
             <input
               className="form-input"
-              type="text"
-              name="name"
-              value={loginData.name}
+              type="email"
+              name="email"
+              value={loginData.email}
               onChange={handleChange}
               required
             />
           </div>
-        )}
 
-        <div className="form-group">
-          <label className="form-label">Email:</label>
-          <input
-            className="form-input"
-            type="email"
-            name="email"
-            value={loginData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label className="form-label">Password:</label>
+            <input
+              className="form-input"
+              type="password"
+              name="password"
+              value={loginData.password}
+              onChange={handleChange}
+              required
+              minLength="8"
+            />
+          </div>
 
-        <div className="form-group">
-          <label className="form-label">Password:</label>
-          <input
-            className="form-input"
-            type="password"
-            name="password"
-            value={loginData.password}
-            onChange={handleChange}
-            required
-            minLength="8"
-          />
-        </div>
+          <button className="form-submit-btn" type="submit">
+            {isRegistering ? "Register" : "Login"}
+          </button>
+        </form>
 
-        <button className="form-submit-btn" type="submit">
-          {isRegistering ? "Register" : "Login"}
+        <button
+          className="toggle-btn"
+          onClick={() => setIsRegistering(!isRegistering)}
+        >
+          {isRegistering ? "Login" : "Register"}
         </button>
-      </form>
 
-      <button
-        className="toggle-btn"
-        onClick={() => setIsRegistering(!isRegistering)}
-      >
-        {isRegistering ? "Login" : "Register"}
-      </button>
+        <div className="or-divider">Or</div>
 
-      <div className="or-divider">Or</div>
+        <div className="google-login-container">
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              handleSuccess(credentialResponse);
+            }}
+          />
+        </div>
 
-      <div className="google-login-container">
-        <GoogleLogin
-          onSuccess={(credentialResponse) => {
-            handleSuccess(credentialResponse);
-          }}
-        />
+        {showPopup && (
+          <Popup
+            message="You have successfully logged in!"
+            closePopup={closePopup}
+          />
+        )}
       </div>
-
-      {showPopup && (
-        <Popup
-          message="You have successfully logged in!"
-          closePopup={closePopup}
-        />
-      )}
     </div>
   );
 };
