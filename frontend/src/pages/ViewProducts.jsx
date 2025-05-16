@@ -622,10 +622,18 @@ function ViewProducts() {
             <div className="search-results">
               {results.map((product) => {
                 const inGroceryList = groceryList.find(
-                  (item) => item.fdcId === product.fdcId
+                  (item) =>
+                    item.fdcId === product.fdcId &&
+                    item.gtinUpc === product.gtinUpc &&
+                    item.name === product.name &&
+                    item.brandName === product.brandName
                 );
                 const isFavorite = favoritesList.some(
-                  (item) => item.fdcId === product.fdcId
+                  (item) =>
+                    item.fdcId === product.fdcId &&
+                    item.gtinUpc === product.gtinUpc &&
+                    item.name === product.name &&
+                    item.brandName === product.brandName
                 );
 
                 return (
