@@ -1,70 +1,87 @@
-# Getting Started with Create React App
+# 🥦 NomCents: Affordable Nutrition Made Simple
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**NomCents** is a full-stack web app that helps users make informed grocery choices by balancing both *nutrition* and *budget*. With rising food costs and limited time to plan meals, many people struggle to maintain a healthy diet without overspending — NomCents provides a simple, centralized way to track both.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🧠 Motivation
 
-### `npm start`
+Nutrition apps focus on calories and macros. Budgeting apps focus on spending. But there isn't a tool that effectively combines both.  
+NomCents bridges that gap — helping users make smarter food decisions by integrating cost-awareness with dietary tracking.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This project was developed as part of a university software engineering course.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🚀 Features
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- 🌤️ Dynamic homepage greeting based on time of day (includes user's name if logged in)
+- 🔍 Product search powered by USDA and Kroger APIs, with filters and price toggle
+- 🏪 Store selector that populates Kroger locations near a given ZIP code
+- 💵 Product details popup with price comparisons between selected Kroger stores
+- ⭐ Favorites page to manage bookmarked items and add to grocery list
+- 🛒 Grocery list with:
+  - Quantity controls
+  - Cart total
+  - Weekly budget tracking
+- 📅 Logs page with:
+  - Daily calorie bar graph (turns red if over budget)
+  - Food log (calories, protein, fat, carbs)
+  - Weight & spending logs
+- 📈 Progress graphs for weekly calories, weight change, and spending
+- 👤 Profile page to enter personal info for BMR & daily calorie estimation, weekly grocery budget
+- 🔐 Login system with Google OAuth or custom email/password auth
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠️ Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Frontend**: React + Vite  
+- **Backend**: Flask (Python)  
+- **Database**: MongoDB  
+- **Auth**: Google OAuth 2.0 + custom login system
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🌐 APIs Used
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- [USDA FoodData Central API](https://fdc.nal.usda.gov/)
+- [Kroger API](https://developer.kroger.com/)
+- [Google OAuth](https://developers.google.com/identity)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## ⚙️ Getting Started (Local Development)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 1. Clone the repository
 
-## Learn More
+git clone https://github.com/CMSC447-Software-Engineering-I-SP2025/Team-4-Repository.git
+cd Team-4-Repository/frontend
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+2. Install frontend dependencies
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+npm install
 
-### Code Splitting
+3. Install backend dependencies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+cd ../backend
+pip install -r requirements.txt
 
-### Analyzing the Bundle Size
+4. Set up environment variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Update the .env file in the backend directory with:
+KROGER_API_KEY=your-kroger-api-key
+KROGER_API_SECRET=your-kroger-api-secret
 
-### Making a Progressive Web App
+🔁 Note: Kroger API keys expire every ~30 days and must be refreshed at developer.kroger.com.
+The USDA API key is already embedded in the code (backend/backend.py) and doesn’t require setup.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+5. Run the app
 
-### Advanced Configuration
+cd ../frontend
+npm run dev
+This runs both the frontend and backend concurrently.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+📄 License / Notes
+This project is intended for educational and demonstration purposes only.
+Food and pricing data provided by USDA and Kroger APIs.
