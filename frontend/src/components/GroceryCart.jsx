@@ -26,7 +26,7 @@ const GroceryCart = ({ cartValue,weekTotal, cartItems, incrementQuantity, decrem
                     />
                     {/* --- End Checkbox --- */}
 
-                    {/* --- Item Details (Name and Brand) --- */}
+                    {/* --- Item Details (Name, Brand, and Price) --- */}
                     <div style={{ // Use a div to allow block elements inside
                         flexGrow: 1, // Allow text to take available space
                         textDecoration: product.isChecked ? 'line-through' : 'none',
@@ -43,6 +43,12 @@ const GroceryCart = ({ cartValue,weekTotal, cartItems, incrementQuantity, decrem
                              <span style={{ display: 'block', fontSize: '0.9em', color: 'black' }}> {/* Style for brand */}
                                 Brand: {product.brandOwner || product.brandName}
                             </span>
+                        )}
+                        {/* Price - Display if available */}
+                        {product.price && (
+                          <span style={{ display: "block", fontSize: "0.9em", color: "black" }}>
+                            Price: ${product.price.toFixed(2)}
+                          </span>
                         )}
                     </div>
                     {/* --- End Item Details --- */}
