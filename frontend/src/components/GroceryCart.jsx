@@ -50,7 +50,7 @@ const GroceryCart = ({ cartValue,weekTotal, cartItems, incrementQuantity, decrem
                             Price: ${Number(product.price).toFixed(2)}
                           </span>
                         ) : (
-                          <span style={{ display: "block", fontSize: "0.9em", color: "red" }}>
+                          <span style={{ display: "block", fontSize: "0.9em", color: "black" }}>
                             Price: N/A
                           </span>
                         )}
