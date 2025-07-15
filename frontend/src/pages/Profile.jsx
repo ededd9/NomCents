@@ -4,7 +4,7 @@ import PopUp from "../components/PopUp";
 import "./Profile.css";
 
 const BACKEND_API_URL =
-  import.meta.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:5000/api";
 
 const Profile = () => {
   const { isLoggedIn, user } = useContext(LoginContext);

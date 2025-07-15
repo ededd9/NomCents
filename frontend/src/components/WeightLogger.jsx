@@ -3,7 +3,7 @@ import React, { useState, useContext } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 
 const BACKEND_API_URL =
-  import.meta.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:5000/api";
 
 const WeightLogger = ({ onWeightLogged, userProfile, selectedDate }) => {
   const { user, isLoggedIn } = useContext(LoginContext);
