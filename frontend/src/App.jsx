@@ -27,7 +27,7 @@ function App() {
       <div className="App">
         <div className="NavBar">
           <div className="left-nav">
-            <a href="/">
+            <Link to="/">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="30"
@@ -36,15 +36,15 @@ function App() {
               >
                 <path d="M 12.023438 2 A 0.750075 0.750075 0 0 0 11.619141 2.1035156 L 2.1191406 7.6914062 A 0.75033057 0.75033057 0 1 0 2.8808594 8.984375 L 3 8.9140625 L 3 20.25 A 0.750075 0.750075 0 0 0 3.75 21 L 20.25 21 A 0.750075 0.750075 0 0 0 21 20.25 L 21 8.9140625 L 21.119141 8.984375 A 0.75033037 0.75033037 0 1 0 21.880859 7.6914062 L 12.380859 2.1035156 A 0.750075 0.750075 0 0 0 12.023438 2 z M 12 3.6210938 L 19.5 8.03125 L 19.5 19.5 L 16 19.5 L 16 11.75 A 0.750075 0.750075 0 0 0 15.25 11 L 8.75 11 A 0.750075 0.750075 0 0 0 8 11.75 L 8 19.5 L 4.5 19.5 L 4.5 8.03125 L 12 3.6210938 z M 9.5 12.5 L 14.5 12.5 L 14.5 19.5 L 9.5 19.5 L 9.5 12.5 z"></path>
               </svg>
-            </a>
+            </Link>
           </div>
           <div className="right-nav">
-            <Link href="/products">Products</Link>
-            <Link href="/favorites">Favorites</Link>
-            <Link href="/grocery-cart">Grocery List</Link>
-            <Link href="/logs">Logs</Link>
-            <Link href="/progress">Progress</Link>
-            <Link href="/profile/:username">Profile</Link>
+            <Link to="/products">Products</Link>
+            <Link to="/favorites">Favorites</Link>
+            <Link to="/grocery-cart">Grocery List</Link>
+            <Link to="/logs">Logs</Link>
+            <Link to="/progress">Progress</Link>
+            <Link to="/profile/:username">Profile</Link>
             <LoginContext.Consumer>
               {({ isLoggedIn, setIsLoggedIn }) =>
                 isLoggedIn ? (
