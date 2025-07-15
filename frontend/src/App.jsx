@@ -57,7 +57,7 @@ function App() {
                     Logout
                   </button>
                 ) : (
-                  <a href="/login">Login</a>
+                  <Link to="/login">Login</Link>
                 )
               }
             </LoginContext.Consumer>
