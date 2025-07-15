@@ -104,7 +104,7 @@ class datauser():
 # print(data.isUser(usstring))
 
 app = Flask(__name__)
-CORS(app, origins=['https://nomcents-frontend.onrender.com'])
+CORS(app, origins=['https://nomcentsweb.onrender.com'])
 
 data = datauser (ATLAS_URI, DB_NAME,COLLECTION_NAME)
 
