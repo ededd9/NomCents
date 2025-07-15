@@ -9,7 +9,7 @@ import Popup from "../components/PopUp";
 import "./LoginPage.css";
 
 const BACKEND_API_URL =
-  process.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
+  import.meta.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
 
 const LoginPage = () => {
   const { setIsLoggedIn, setUser } = useContext(LoginContext);
