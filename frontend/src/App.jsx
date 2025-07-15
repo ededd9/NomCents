@@ -19,7 +19,7 @@ function App() {
     { path: "/grocery-cart", element: <GroceryCartPage /> },
     { path: "/favorites", element: <FavoritesPage /> },
     { path: "/progress", element: <ProgressPage /> },
-    { path: "/logs", element: <LogsPage /> }
+    { path: "/logs", element: <LogsPage /> },
   ]);
 
   return (
@@ -39,12 +39,12 @@ function App() {
             </a>
           </div>
           <div className="right-nav">
-            <a href="/products">Products</a>
-            <a href="/favorites">Favorites</a>
-            <a href="/grocery-cart">Grocery List</a>
-            <a href="/logs">Logs</a>
-            <a href="/progress">Progress</a>
-            <a href="/profile/:username">Profile</a>
+            <Link href="/products">Products</Link>
+            <Link href="/favorites">Favorites</Link>
+            <Link href="/grocery-cart">Grocery List</Link>
+            <Link href="/logs">Logs</Link>
+            <Link href="/progress">Progress</Link>
+            <Link href="/profile/:username">Profile</Link>
             <LoginContext.Consumer>
               {({ isLoggedIn, setIsLoggedIn }) =>
                 isLoggedIn ? (
