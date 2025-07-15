@@ -6,7 +6,8 @@ import FoodLogModal from "../components/FoodLogModal";
 import "./ViewProducts.css";
 import Select from "react-select";
 
-const BACKEND_API_URL = "http://127.0.0.1:5000/api";
+const BACKEND_API_URL =
+  process.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
 
 function ViewProducts() {
   const [product, setProduct] = useState("");
@@ -638,7 +639,9 @@ function ViewProducts() {
 
                 return (
                   <div
-                    key={`${product.fdcId}-${product.gtinUpc || ''}-${product.name || ''}-${product.brandName || ''}`}
+                    key={`${product.fdcId}-${product.gtinUpc || ""}-${
+                      product.name || ""
+                    }-${product.brandName || ""}`}
                     className="product-card"
                   >
                     <div
@@ -763,8 +766,7 @@ function ViewProducts() {
         </div>
       </div>
 
-
-            {/* Product Details Popup */}
+      {/* Product Details Popup */}
       {showProductDetails && selectedProduct && (
         <Popup
           message={
@@ -778,7 +780,9 @@ function ViewProducts() {
                 <li>Calories: {selectedProduct.nutrition.calories}</li>
                 <li>Protein: {selectedProduct.nutrition.protein}</li>
                 <li>Fat: {selectedProduct.nutrition.fat}</li>
-                <li>Carbohydrates: {selectedProduct.nutrition.carbohydrates}</li>
+                <li>
+                  Carbohydrates: {selectedProduct.nutrition.carbohydrates}
+                </li>
                 <li>Sugars: {selectedProduct.nutrition.sugars}</li>
                 <li>Fiber: {selectedProduct.nutrition.fiber}</li>
               </ul>
@@ -804,17 +808,19 @@ function ViewProducts() {
                     </thead>
                     <tbody>
                       {priceComparisonData.map((price) => {
-                        const isSelectedStore = price.locationId === selectedStore?.value; // Check if this is the selected store
+                        const isSelectedStore =
+                          price.locationId === selectedStore?.value; // Check if this is the selected store
                         return (
                           <tr key={price.locationId}>
-                            <td style={{paddingRight: "20px"}}>
-                              {
-                                storeOptions.find((store) => store.value === price.locationId)
-                                  ?.label || "Unknown Store"
-                              }
+                            <td style={{ paddingRight: "20px" }}>
+                              {storeOptions.find(
+                                (store) => store.value === price.locationId
+                              )?.label || "Unknown Store"}
                             </td>
                             <td>
-                              {price.price !== "n/a" ? `$${price.price}` : "Not Available"}
+                              {price.price !== "n/a"
+                                ? `$${price.price}`
+                                : "Not Available"}
                               {isSelectedStore && (
                                 <span
                                   style={{
@@ -839,7 +845,9 @@ function ViewProducts() {
                   onClick={fetchPriceComparison}
                   style={{ marginTop: "10px", marginRight: "5px" }}
                 >
-                  {showPriceComparison ? "Hide Price Comparison" : "Compare Prices with Other Nearby Stores"}
+                  {showPriceComparison
+                    ? "Hide Price Comparison"
+                    : "Compare Prices with Other Nearby Stores"}
                 </button>
               )}
               <button onClick={closeProductDetails}>Close</button>
