@@ -4,14 +4,14 @@ import GroceryCart from "../components/GroceryCart";
 import { LoginContext } from "../contexts/LoginContext";
 import "./GroceryCartPage.css";
 
-const BACKEND_API_URL = "http://127.0.0.1:5000/api";
+const BACKEND_API_URL =
+  process.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
 
 const GroceryCartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const { isLoggedIn, user } = useContext(LoginContext);
   const [cartValue, setCartValue] = useState(0);
   const [weekTotal, setWeekTotal] = useState(0);
-
 
   // Fetch grocery list when user logs in or changes
   useEffect(() => {
@@ -34,14 +34,14 @@ const GroceryCartPage = () => {
         const userData = await response.json();
         console.log("User data fetched for cart:", userData);
         // Ensure every item has an isChecked property (defaults to false if missing)
-        const itemsWithChecked = (userData.groceryList || []).map(item => ({
+        const itemsWithChecked = (userData.groceryList || []).map((item) => ({
           ...item,
-          isChecked: item.isChecked || false // Add default value if missing
+          isChecked: item.isChecked || false, // Add default value if missing
         }));
         setCartItems(itemsWithChecked);
       } else {
-          console.error("Failed to fetch grocery list:", response.statusText);
-          setCartItems([]); // Clear cart on error
+        console.error("Failed to fetch grocery list:", response.statusText);
+        setCartItems([]); // Clear cart on error
       }
     } catch (error) {
       console.error("Error fetching grocery list:", error);
@@ -52,10 +52,10 @@ const GroceryCartPage = () => {
   // Function to update grocery list in backend (no changes needed here)
   const updateGroceryList = async (newGroceryList) => {
     if (!isLoggedIn || !user) {
-        console.error("Cannot update grocery list: User not logged in.");
-        // Optional: could refetch to reset state if desired
-        // if (user) fetchGroceryList(user.email);
-        return;
+      console.error("Cannot update grocery list: User not logged in.");
+      // Optional: could refetch to reset state if desired
+      // if (user) fetchGroceryList(user.email);
+      return;
     }
     try {
       console.log("Updating grocery list for email:", user.email);
@@ -67,7 +67,10 @@ const GroceryCartPage = () => {
           "Content-Type": "application/json",
         },
         // Send the complete list including the isChecked status
-        body: JSON.stringify({ email: user.email, groceryList: newGroceryList }),
+        body: JSON.stringify({
+          email: user.email,
+          groceryList: newGroceryList,
+        }),
       });
 
       console.log("Update grocery list response status:", response.status);
@@ -134,15 +137,19 @@ const GroceryCartPage = () => {
   };
 
   const cartTotal = async (email) => {
-
     try {
-      const response = await fetch(`${BACKEND_API_URL}/usercartvalue?email=${email}`);
+      const response = await fetch(
+        `${BACKEND_API_URL}/usercartvalue?email=${email}`
+      );
       if (response.ok) {
         const data = await response.json();
-     
+
         setCartValue(data.cartValue);
       } else {
-          console.error("Failed to fetch grocery listprice:", response.statusText);
+        console.error(
+          "Failed to fetch grocery listprice:",
+          response.statusText
+        );
       }
     } catch (error) {
       console.error("Error fetching grocery listprice:", error);
@@ -151,35 +158,40 @@ const GroceryCartPage = () => {
 
   const weeklyTotal = async (email) => {
     try {
-      const response = await fetch(`${BACKEND_API_URL}/userweektotal?email=${email}`);
+      const response = await fetch(
+        `${BACKEND_API_URL}/userweektotal?email=${email}`
+      );
       if (response.ok) {
         const data = await response.json();
         setWeekTotal(data.total);
       } else {
-          console.error("Failed to fetch grocery listprice:", response.statusText);
+        console.error(
+          "Failed to fetch grocery listprice:",
+          response.statusText
+        );
       }
     } catch (error) {
       console.error("Error fetching grocery listprice:", error);
     }
-  }
+  };
 
-    return (
+  return (
     <div className="GroceryCartPage">
       <h1>Grocery List</h1>
-       {/* Display message if not logged in */}
-       {!isLoggedIn && <p>Please log in to view your grocery list.</p>}
-       {/* Render GroceryCart only if logged in */}
-       {isLoggedIn && (
+      {/* Display message if not logged in */}
+      {!isLoggedIn && <p>Please log in to view your grocery list.</p>}
+      {/* Render GroceryCart only if logged in */}
+      {isLoggedIn && (
         <GroceryCart
-            cartValue={cartValue}
-            weekTotal={weekTotal}
-            cartItems={cartItems}
-            incrementQuantity={incrementQuantity}
-            decrementQuantity={decrementQuantity}
-            removeItem={removeItem}
-            toggleChecked={toggleChecked} // <-- Pass the new function
+          cartValue={cartValue}
+          weekTotal={weekTotal}
+          cartItems={cartItems}
+          incrementQuantity={incrementQuantity}
+          decrementQuantity={decrementQuantity}
+          removeItem={removeItem}
+          toggleChecked={toggleChecked} // <-- Pass the new function
         />
-       )}
+      )}
     </div>
   );
 };

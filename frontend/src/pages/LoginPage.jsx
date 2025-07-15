@@ -8,7 +8,8 @@ import Popup from "../components/PopUp";
 
 import "./LoginPage.css";
 
-const BACKEND_API_URL = "http://127.0.0.1:5000/api";
+const BACKEND_API_URL =
+  process.env.REACT_APP_API_URL || "http://127.0.0.1:5000/api";
 
 const LoginPage = () => {
   const { setIsLoggedIn, setUser } = useContext(LoginContext);
@@ -152,7 +153,9 @@ const LoginPage = () => {
   return (
     <div className="login-page-container">
       <div className="login-page">
-        <h1 className="login-pg-title">{isRegistering ? "Register" : "Login"}</h1>
+        <h1 className="login-pg-title">
+          {isRegistering ? "Register" : "Login"}
+        </h1>
 
         <form className="login-form" onSubmit={handleEmailAuth}>
           {isRegistering && (
