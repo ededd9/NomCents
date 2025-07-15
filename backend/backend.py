@@ -117,7 +117,8 @@ token_cache = {
 # Get Kroger API credentials from .env file
 client_id = os.getenv("KROGER_CLIENT_ID")
 client_secret = os.getenv("KROGER_CLIENT_SECRET")
-
+print(f"Client ID: {client_id}")
+print(f"Client Secret: {client_secret[:4]}***{client_secret[-4:]}")  # Only show first/last 4 chars
 # Route for getting Kroger access token
 @app.route("/api/kroger-token", methods=["GET"])
 def get_kroger_token():
@@ -132,10 +133,23 @@ def get_kroger_token():
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {"grant_type": "client_credentials", "scope": "product.compact"}
-    res = requests.post("https://api-ce.kroger.com/v1/connect/oauth2/token", headers=headers, data=data)
+    res = requests.post("https://api.kroger.com/v1/connect/oauth2/token", headers=headers, data=data)
     res_json = res.json()
+    
+    # Debug prints AFTER making the request
+    print(f"API Response Status: {res.status_code}")
+    print(f"API Response Body: {res_json}")
     print("Status code:", res.status_code)
     print("Response text:", res.text)
+    
+    # Check if the response contains access_token before trying to use it
+    if "access_token" not in res_json:
+        print("ERROR: No access_token in response!")
+        if "error" in res_json:
+            print(f"API Error: {res_json.get('error')}")
+            print(f"Error Description: {res_json.get('error_description')}")
+        return jsonify({"error": "Failed to get access token"}), 500
+    
     token_cache["access_token"] = res_json["access_token"]
     token_cache["expires_at"] = now + res_json["expires_in"]
 
@@ -393,7 +407,7 @@ def get_locations():
         "Authorization": f"Bearer { token_cache['access_token']}"
     }
     
-    response = requests.get(f"https://api-ce.kroger.com/v1/locations?filter.zipCode.near={zipcode}&filter.limit=10", headers=headers)
+    response = requests.get(f"https://api.kroger.com/v1/locations?filter.zipCode.near={zipcode}&filter.limit=10", headers=headers)
     
     print("Kroger API Request URL:", response.url, flush=True)
     
@@ -433,7 +447,7 @@ async def fetch_prices_batch(session, upcs, location_id, headers):
     if cache_key in kroger_cache:
         return kroger_cache[cache_key]
     
-    url = "https://api-ce.kroger.com/v1/products"
+    url = "https://api.kroger.com/v1/products"
     params = {
         "filter.locationId": location_id,
         "filter.productId": ",".join(f"00{upc}" for upc in upcs)
@@ -603,7 +617,7 @@ async def search_product():
             for loc_id in DEFAULT_LOCATIONS:
                 kroger_params["filter.locationId"] = loc_id
                 response = requests.get(
-                    "https://api-ce.kroger.com/v1/products",
+                    "https://api.kroger.com/v1/products",
                     headers=headers,
                     params=kroger_params
                 )
@@ -613,7 +627,7 @@ async def search_product():
         try:
             #get products from API
             kroger_response = requests.get(
-                "https://api-ce.kroger.com/v1/products",
+                "https://api.kroger.com/v1/products",
                 headers=headers,
                 params=kroger_params
             )
@@ -975,7 +989,7 @@ def price_comparison():
     results = []
     
     for location_id in location_ids:
-        response = requests.get(f"https://api-ce.kroger.com/v1/products/{gtinUpc}?filter.locationId={location_id}", headers=headers)
+        response = requests.get(f"https://api.kroger.com/v1/products/{gtinUpc}?filter.locationId={location_id}", headers=headers)
         
         print("Kroger API Request URL:", response.url, flush=True)
         print("Kroger API response: ", response.text, flush=True)
